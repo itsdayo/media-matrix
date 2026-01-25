@@ -82,8 +82,6 @@ export default function Gallery() {
     setDebouncedQuery(searchQuery);
     try {
       const results = await getUnsplashImages(searchQuery, page);
-      console.log(results, "API results in browser");
-      console.log("First image thumbnail URL:", results.images[0]?.thumbnail);
       setImages(results.images);
       setCurrentPage(results.currentPage);
       setTotalPages(results.totalPages);
@@ -260,12 +258,6 @@ export default function Gallery() {
                     style={{ backgroundColor: "#f3f4f6" }}
                     onError={(e) => {
                       console.error("Image failed to load:", image.thumbnail);
-                    }}
-                    onLoad={() => {
-                      console.log(
-                        "Image loaded successfully:",
-                        image.thumbnail,
-                      );
                     }}
                     unoptimized
                   />
