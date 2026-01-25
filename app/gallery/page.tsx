@@ -12,6 +12,13 @@ interface ImageResult {
   thumbnail: string;
 }
 
+interface PaginationData {
+  images: ImageResult[];
+  totalPages: number;
+  currentPage: number;
+  totalResults: number;
+}
+
 export default function Gallery() {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -19,6 +26,9 @@ export default function Gallery() {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalResults, setTotalResults] = useState(0);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load saved search query and results on mount
@@ -64,17 +74,20 @@ export default function Gallery() {
   }, [images]);
 
   // Debounced search function
-  const performSearch = async (searchQuery: string) => {
+  const performSearch = async (searchQuery: string, page: number = 1) => {
     if (!searchQuery.trim()) return;
 
     setLoading(true);
     setError("");
     setDebouncedQuery(searchQuery);
     try {
-      const results = await getUnsplashImages(searchQuery);
+      const results = await getUnsplashImages(searchQuery, page);
       console.log(results, "API results in browser");
-      console.log("First image thumbnail URL:", results[0]?.thumbnail);
-      setImages(results);
+      console.log("First image thumbnail URL:", results.images[0]?.thumbnail);
+      setImages(results.images);
+      setCurrentPage(results.currentPage);
+      setTotalPages(results.totalPages);
+      setTotalResults(results.totalResults);
     } catch (err) {
       console.error(err);
       setError("Failed to fetch images. Please try again.");
@@ -117,6 +130,9 @@ export default function Gallery() {
     setImages([]);
     setDebouncedQuery("");
     setError("");
+    setCurrentPage(1);
+    setTotalPages(0);
+    setTotalResults(0);
   };
 
   // Handle navigation with image data via URL parameters
@@ -165,8 +181,17 @@ export default function Gallery() {
       clearTimeout(debounceTimeoutRef.current);
     }
 
+    // Reset to first page for new search
+    setCurrentPage(1);
     // Perform immediate search
-    performSearch(query);
+    performSearch(query, 1);
+  };
+
+  // Handle page navigation
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages) return;
+    setCurrentPage(newPage);
+    performSearch(debouncedQuery, newPage);
   };
 
   return (
@@ -227,6 +252,7 @@ export default function Gallery() {
                 >
                   <Image
                     src={image.thumbnail}
+                    preload={true}
                     alt={image.title}
                     width={400}
                     height={192}
@@ -297,6 +323,65 @@ export default function Gallery() {
             <div className="text-center text-gray-600 dark:text-gray-400 py-12">
               No images found for &quot;{query}&quot;. Try a different search
               term.
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-8 flex justify-center items-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1 || loading}
+                className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Previous
+              </button>
+
+              <div className="flex gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                      disabled={loading}
+                      className={`px-3 py-2 rounded-lg transition-colors ${
+                        currentPage === pageNum
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages || loading}
+                className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          )}
+
+          {/* Results info */}
+          {images.length > 0 && (
+            <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+              Showing {images.length} of {totalResults} results (Page{" "}
+              {currentPage} of {totalPages})
             </div>
           )}
         </div>

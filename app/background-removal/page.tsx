@@ -113,6 +113,7 @@ export default function BackgroundRemoval() {
               {selectedImage ? (
                 <div className="w-full h-full relative rounded-2xl overflow-hidden">
                   <Image
+                    preload={true}
                     src={selectedImage}
                     alt="Selected image"
                     fill
@@ -212,6 +213,7 @@ export default function BackgroundRemoval() {
               {generatedImage ? (
                 <div className="w-full h-full relative rounded-2xl overflow-hidden">
                   <Image
+                    preload={true}
                     src={generatedImage}
                     alt="Background removed image"
                     fill

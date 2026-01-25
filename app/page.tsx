@@ -87,6 +87,7 @@ export default function Home() {
               <div className="flex items-center space-x-4">
                 <div className="relative">
                   <Image
+                    preload={true}
                     src="/images/man-swimsuit.png"
                     alt="Man in swimsuit"
                     width={128}
@@ -102,6 +103,7 @@ export default function Home() {
                 </div>
                 <div className="relative">
                   <Image
+                    preload={true}
                     src="/images/beach.png"
                     alt="Beach background"
                     width={128}
@@ -117,6 +119,7 @@ export default function Home() {
                 </div>
                 <div className="relative">
                   <Image
+                    preload={true}
                     src="/images/manbeach.png"
                     alt="Man on beach result"
                     width={160}

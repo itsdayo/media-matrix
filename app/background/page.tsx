@@ -122,7 +122,7 @@ export default function Background() {
                 Person Photo
               </h3>
               <div className="flex justify-center">
-                <div
+                <button
                   className={`relative border-3 border-dashed rounded-2xl transition-all duration-200 cursor-pointer ${
                     isDraggingPerson
                       ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
@@ -152,6 +152,7 @@ export default function Background() {
                   {personImage ? (
                     <div className="w-full h-full relative rounded-2xl overflow-hidden">
                       <Image
+                        preload={true}
                         src={personImage}
                         alt="Person image"
                         fill
@@ -214,7 +215,7 @@ export default function Background() {
                       </p>
                     </div>
                   )}
-                </div>
+                </button>
               </div>
             </div>
 
@@ -224,7 +225,8 @@ export default function Background() {
                 Background Setting
               </h3>
               <div className="flex justify-center">
-                <div
+                <button
+                  type="button"
                   className={`relative border-3 border-dashed rounded-2xl transition-all duration-200 cursor-pointer ${
                     isDraggingBackground
                       ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
@@ -254,6 +256,7 @@ export default function Background() {
                   {backgroundImage ? (
                     <div className="w-full h-full relative rounded-2xl overflow-hidden">
                       <Image
+                        preload={true}
                         src={backgroundImage}
                         alt="Background image"
                         fill
@@ -316,7 +319,7 @@ export default function Background() {
                       </p>
                     </div>
                   )}
-                </div>
+                </button>
               </div>
             </div>
           </div>
@@ -405,7 +408,9 @@ export default function Background() {
             <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
               <li>1. Upload a photo of a person on the left</li>
               <li>2. Upload a background setting on the right</li>
-              <li>3. Click "Blend Images" to create your perfect scene</li>
+              <li>
+                3. Click &quot;Blend Images&quot; to create your perfect scene
+              </li>
             </ol>
           </div>
         </div>

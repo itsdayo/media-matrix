@@ -114,6 +114,7 @@ export default function Chat() {
               {selectedImage ? (
                 <div className="w-full h-full relative rounded-2xl overflow-hidden">
                   <Image
+                    preload={true}
                     src={selectedImage}
                     alt="Selected image"
                     fill
@@ -191,6 +192,7 @@ export default function Chat() {
               {generatedImage ? (
                 <div className="w-full h-full relative rounded-2xl overflow-hidden">
                   <Image
+                    preload={true}
                     src={generatedImage}
                     alt="AI generated image"
                     fill
@@ -292,7 +294,9 @@ export default function Chat() {
             <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
               <li>1. Drop a photo in the box above</li>
               <li>2. Describe what changes you want</li>
-              <li>3. Click "Generate Image" to create your new image</li>
+              <li>
+                3. Click &quot;Generate Image&quot; to create your new image
+              </li>
             </ol>
           </div>
         </div>
