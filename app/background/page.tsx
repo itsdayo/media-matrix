@@ -1,0 +1,415 @@
+"use client";
+
+import { useState, useRef } from "react";
+import { useSearchParams } from "next/navigation";
+import Image from "next/image";
+
+export default function Background() {
+  const searchParams = useSearchParams();
+  const personUrl = searchParams.get("personUrl");
+  const backgroundUrl = searchParams.get("backgroundUrl");
+
+  const [personImage, setPersonImage] = useState<string | null>(personUrl);
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(
+    backgroundUrl,
+  );
+  const [isDraggingPerson, setIsDraggingPerson] = useState(false);
+  const [isDraggingBackground, setIsDraggingBackground] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const personFileInputRef = useRef<HTMLInputElement>(null);
+  const backgroundFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDragOver = (
+    e: React.DragEvent,
+    type: "person" | "background",
+  ) => {
+    e.preventDefault();
+    if (type === "person") {
+      setIsDraggingPerson(true);
+    } else {
+      setIsDraggingBackground(true);
+    }
+  };
+
+  const handleDragLeave = (
+    e: React.DragEvent,
+    type: "person" | "background",
+  ) => {
+    e.preventDefault();
+    if (type === "person") {
+      setIsDraggingPerson(false);
+    } else {
+      setIsDraggingBackground(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, type: "person" | "background") => {
+    e.preventDefault();
+    if (type === "person") {
+      setIsDraggingPerson(false);
+    } else {
+      setIsDraggingBackground(false);
+    }
+
+    const files = e.dataTransfer.files;
+    if (files.length > 0 && files[0].type.startsWith("image/")) {
+      handleImageUpload(files[0], type);
+    }
+  };
+
+  const handleImageUpload = (file: File, type: "person" | "background") => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (type === "person") {
+        setPersonImage(reader.result as string);
+      } else {
+        setBackgroundImage(reader.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileSelect = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: "person" | "background",
+  ) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      handleImageUpload(file, type);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!personImage || !backgroundImage) return;
+
+    setIsLoading(true);
+
+    // Simulate AI processing
+    setTimeout(() => {
+      alert(
+        "Background blending simulated! In a real app, this would send both images to an AI service to blend them together.",
+      );
+      setIsLoading(false);
+      // Reset form
+      setPersonImage(null);
+      setBackgroundImage(null);
+    }, 2000);
+  };
+
+  const isSubmitDisabled = !personImage || !backgroundImage || isLoading;
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Background Setting
+          </h1>
+          <p className="text-lg text-gray-600 dark:text-gray-300">
+            Upload a person photo and a background to create your perfect scene
+          </p>
+        </div>
+
+        {/* Main Content */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+          {/* Image Upload Areas */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            {/* Person Image */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">
+                Person Photo
+              </h3>
+              <div className="flex justify-center">
+                <div
+                  className={`relative border-3 border-dashed rounded-2xl transition-all duration-200 cursor-pointer ${
+                    isDraggingPerson
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                      : personImage
+                        ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                        : "border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 hover:border-gray-400 dark:hover:border-gray-500"
+                  }`}
+                  style={{
+                    width: "min(30vh, 30vw)",
+                    height: "min(30vh, 30vw)",
+                    maxWidth: "300px",
+                    maxHeight: "300px",
+                  }}
+                  onDragOver={(e) => handleDragOver(e, "person")}
+                  onDragLeave={(e) => handleDragLeave(e, "person")}
+                  onDrop={(e) => handleDrop(e, "person")}
+                  onClick={() => personFileInputRef.current?.click()}
+                >
+                  <input
+                    type="file"
+                    ref={personFileInputRef}
+                    onChange={(e) => handleFileSelect(e, "person")}
+                    accept="image/*"
+                    className="hidden"
+                  />
+
+                  {personImage ? (
+                    <div className="w-full h-full relative rounded-2xl overflow-hidden">
+                      <Image
+                        src={personImage}
+                        alt="Person image"
+                        fill
+                        className="object-cover"
+                      />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPersonImage(null);
+                        }}
+                        className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center p-6">
+                      <svg
+                        className={`w-12 h-12 mb-4 transition-colors ${
+                          isDraggingPerson
+                            ? "text-blue-500"
+                            : "text-gray-400 dark:text-gray-500"
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                      <p
+                        className={`text-center font-medium transition-colors ${
+                          isDraggingPerson
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-gray-600 dark:text-gray-400"
+                        }`}
+                      >
+                        {isDraggingPerson
+                          ? "Drop image here"
+                          : "Drop person photo"}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                        or click to browse
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Background Image */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">
+                Background Setting
+              </h3>
+              <div className="flex justify-center">
+                <div
+                  className={`relative border-3 border-dashed rounded-2xl transition-all duration-200 cursor-pointer ${
+                    isDraggingBackground
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                      : backgroundImage
+                        ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                        : "border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 hover:border-gray-400 dark:hover:border-gray-500"
+                  }`}
+                  style={{
+                    width: "min(30vh, 30vw)",
+                    height: "min(30vh, 30vw)",
+                    maxWidth: "300px",
+                    maxHeight: "300px",
+                  }}
+                  onDragOver={(e) => handleDragOver(e, "background")}
+                  onDragLeave={(e) => handleDragLeave(e, "background")}
+                  onDrop={(e) => handleDrop(e, "background")}
+                  onClick={() => backgroundFileInputRef.current?.click()}
+                >
+                  <input
+                    type="file"
+                    ref={backgroundFileInputRef}
+                    onChange={(e) => handleFileSelect(e, "background")}
+                    accept="image/*"
+                    className="hidden"
+                  />
+
+                  {backgroundImage ? (
+                    <div className="w-full h-full relative rounded-2xl overflow-hidden">
+                      <Image
+                        src={backgroundImage}
+                        alt="Background image"
+                        fill
+                        className="object-cover"
+                      />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setBackgroundImage(null);
+                        }}
+                        className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center p-6">
+                      <svg
+                        className={`w-12 h-12 mb-4 transition-colors ${
+                          isDraggingBackground
+                            ? "text-blue-500"
+                            : "text-gray-400 dark:text-gray-500"
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                      <p
+                        className={`text-center font-medium transition-colors ${
+                          isDraggingBackground
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-gray-600 dark:text-gray-400"
+                        }`}
+                      >
+                        {isDraggingBackground
+                          ? "Drop image here"
+                          : "Drop background photo"}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                        or click to browse
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Plus Symbol */}
+          <div className="flex justify-center mb-8">
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+              <svg
+                className="w-6 h-6 text-blue-600 dark:text-blue-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+            </div>
+          </div>
+
+          {/* Result Preview Area */}
+          <div className="flex justify-center mb-8">
+            <div
+              className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl flex items-center justify-center"
+              style={{
+                width: "min(35vh, 35vw)",
+                height: "min(35vh, 35vw)",
+                maxWidth: "350px",
+                maxHeight: "350px",
+              }}
+            >
+              <div className="text-center p-6">
+                <svg
+                  className="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                <p className="text-gray-600 dark:text-gray-400 font-medium">
+                  AI will blend your images here
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                  Upload both photos to see the result
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="flex justify-center">
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitDisabled}
+              className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 ${
+                isSubmitDisabled
+                  ? "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              }`}
+            >
+              {isLoading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Blending...</span>
+                </div>
+              ) : (
+                "Blend Images"
+              )}
+            </button>
+          </div>
+
+          {/* Instructions */}
+          <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+              How it works:
+            </h3>
+            <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+              <li>1. Upload a photo of a person on the left</li>
+              <li>2. Upload a background setting on the right</li>
+              <li>3. Click "Blend Images" to create your perfect scene</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

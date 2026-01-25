@@ -1,36 +1,228 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Media Matrix
 
-## Getting Started
+An AI-powered photo generation and manipulation platform built with Next.js, TypeScript, and Tailwind CSS.
 
-First, run the development server:
+## 🌟 Features
+
+### AI Image Generation
+
+- **Chat-based Modifications**: Upload images and describe changes using natural language
+- **Background Setting**: Combine person photos with custom backgrounds
+- **Background Removal**: Automatically remove backgrounds from images
+
+### Image Gallery
+
+- **Search Functionality**: Search images from Unsplash with 3-second debounce
+- **Smart Navigation**: Quick access to AI tools with pre-loaded images
+- **Persistent Search**: Search queries persist across navigation
+
+### User Experience
+
+- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
+- **Dark Mode Support**: Full dark/light theme compatibility
+- **Drag & Drop**: Intuitive image upload interfaces
+- **Real-time Feedback**: Loading states and smooth transitions
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone <repository-url>
+cd media-matrix
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+# or
+yarn install
+```
+
+3. Set up environment variables:
+
+```bash
+cp .env.example .env
+# Add your Unsplash API key and other environment variables
+```
+
+4. Run the development server:
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+media-matrix/
+├── app/
+│   ├── api/
+│   │   └── actions.ts          # API utilities
+│   ├── chat/
+│   │   └── page.tsx            # AI chat interface
+│   ├── background/
+│   │   └── page.tsx            # Background setting tool
+│   ├── background-removal/
+│   │   └── page.tsx            # Background removal tool
+│   ├── gallery/
+│   │   └── page.tsx            # Image gallery with search
+│   ├── layout.tsx               # Root layout
+│   └── page.tsx                # Home page
+├── public/
+│   └── images/                 # Static images
+├── .env                         # Environment variables
+├── .gitignore
+├── README.md
+├── next.config.ts
+├── package.json
+└── tsconfig.json
+```
 
-## Learn More
+## 🎯 Pages & Features
 
-To learn more about Next.js, take a look at the following resources:
+### Home Page (`/`)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Feature overview with interactive selection
+- Visual demonstration of AI capabilities
+- Responsive grid layout for feature steps
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### AI Chat (`/chat`)
 
-## Deploy on Vercel
+- Upload images via drag & drop or file selection
+- Text input for describing modifications
+- AI result preview area
+- Pre-loaded images from gallery navigation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Background Setting (`/background`)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Dual upload areas for person and background images
+- Visual preview of blended result
+- Separate handling for person and background uploads
+- Smart navigation from gallery
+
+### Background Removal (`/background-removal`)
+
+- Single image upload interface
+- Automatic background processing
+- Result preview with "Background Removed" indicator
+- Clean, focused workflow
+
+### Image Gallery (`/gallery`)
+
+- Unsplash image search with 3-second debounce
+- Four action buttons per image:
+  - 🤖 **ChatBot**: Send to AI chat
+  - 👤 **Person**: Set as person in background tool
+  - 🖼️ **Background**: Set as background in background tool
+  - ✂️ **Remove**: Send to background removal tool
+- Persistent search across navigation
+- Clear search functionality
+
+## 🔧 Technical Implementation
+
+### Image Navigation
+
+Images are passed between pages using URL parameters:
+
+- `/chat?imageUrl=...&imageTitle=...&imageThumbnail=...`
+- `/background?personUrl=...&backgroundUrl=...`
+- `/background-removal?imageUrl=...`
+
+### State Management
+
+- **Session Storage**: Persists gallery search queries and results
+- **URL Parameters**: Passes image data between pages
+- **React State**: Manages component-level state
+
+### Performance Optimizations
+
+- **Next.js Image Component**: Optimized image loading
+- **Debounced Search**: Reduces API calls during typing
+- **Lazy Loading**: Images load as needed
+- **Responsive Images**: Proper sizing for different devices
+
+## 🎨 Design System
+
+### Color Scheme
+
+- **Primary**: Blue (`bg-blue-600`)
+- **Success**: Green (`bg-green-600`)
+- **Warning**: Purple (`bg-purple-600`)
+- **Danger**: Red (`bg-red-600`)
+
+### Components
+
+- Consistent button styling with hover states
+- Rounded corners and shadow effects
+- Smooth transitions and micro-interactions
+- Accessible tooltips and labels
+
+## 🛠️ Development
+
+### Available Scripts
+
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+```
+
+### Key Dependencies
+
+- **Next.js 14+**: React framework with App Router
+- **TypeScript**: Type safety
+- **Tailwind CSS**: Utility-first styling
+- **Lucide React**: Icon library
+- **Unsplash API**: Image search functionality
+
+## 📱 Responsive Design
+
+- **Mobile**: Single column layouts, stacked elements
+- **Tablet**: Two-column grids, adapted spacing
+- **Desktop**: Multi-column layouts, full feature set
+
+## 🔒 Environment Variables
+
+Create a `.env` file with:
+
+```env
+UNSPLASH_ACCESS_KEY=your_unsplash_access_key
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Unsplash** for providing the image search API
+- **Next.js** team for the excellent framework
+- **Tailwind CSS** for the utility-first CSS framework
+- **Lucide** for the beautiful icon set
+
+---
+
+Built with ❤️ using Next.js, TypeScript, and Tailwind CSS
