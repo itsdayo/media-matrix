@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
+import { Download } from "lucide-react";
 
 export default function Chat() {
   const searchParams = useSearchParams();
@@ -49,20 +50,63 @@ export default function Chat() {
     }
   };
 
+  const handleDownload = async (
+    imageUrl: string,
+    filename: string = "generated-image.png",
+  ) => {
+    try {
+      // Create a temporary link element to trigger download
+      const link = document.createElement("a");
+      link.href = imageUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Error downloading image:", error);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!inputText.trim() || !selectedImage) return;
 
     setIsLoading(true);
 
-    // Simulate AI processing
-    setTimeout(() => {
-      // Simulate generated image (using the uploaded image as placeholder)
+    try {
+      // Convert base64 to blob for upload
+      const response = await fetch(selectedImage);
+      const blob = await response.blob();
+
+      // Create FormData to send the file and prompt
+      const formData = new FormData();
+      formData.append("image", blob, "image.png");
+      formData.append("prompt", inputText);
+
+      // Call API route to process the image
+      const apiResponse = await fetch("/api/generate", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (apiResponse.ok) {
+        const result = await apiResponse.json();
+        if (result.success && result.imageUrl) {
+          setGeneratedImage(result.imageUrl);
+        } else {
+          // Fallback to original image if processing fails
+          setGeneratedImage(selectedImage);
+        }
+      } else {
+        console.error("API call failed");
+        setGeneratedImage(selectedImage);
+      }
+    } catch (error) {
+      console.error("Error generating image:", error);
+      // Fallback to original image on error
       setGeneratedImage(selectedImage);
+    } finally {
       setIsLoading(false);
-      // Reset form but keep generated image
-      setInputText("");
-      setSelectedImage(null);
-    }, 2000);
+    }
   };
 
   const isSubmitDisabled = !inputText.trim() || !selectedImage || isLoading;
@@ -218,6 +262,15 @@ export default function Chat() {
                         d="M6 18L18 6M6 6l12 12"
                       />
                     </svg>
+                  </button>
+                  <button
+                    onClick={() =>
+                      handleDownload(generatedImage, "ai-generated.png")
+                    }
+                    className="absolute bottom-2 right-2 bg-blue-600 text-white px-3 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-700 transition-colors shadow-lg"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span className="text-sm font-medium">Download</span>
                   </button>
                 </div>
               ) : (

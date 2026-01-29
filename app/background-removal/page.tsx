@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
+import { Download } from "lucide-react";
 
 export default function BackgroundRemoval() {
   const searchParams = useSearchParams();
@@ -49,19 +50,64 @@ export default function BackgroundRemoval() {
     }
   };
 
+  const handleDownload = async (
+    imageUrl: string,
+    filename: string = "generated-image.png",
+  ) => {
+    try {
+      // Create a temporary link element to trigger download
+      const link = document.createElement("a");
+      link.href = imageUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Error downloading image:", error);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!selectedImage) return;
 
     setIsLoading(true);
+    setGeneratedImage(null);
 
-    // Simulate AI processing
-    setTimeout(() => {
-      // Simulate background removal (using the uploaded image as placeholder)
-      setGeneratedImage(selectedImage);
+    try {
+      // Create FormData to send file to server
+      const formData = new FormData();
+
+      // Convert base64 to blob and append to FormData
+      const imageBlob = await fetch(selectedImage).then((r) => r.blob());
+      formData.append("image", imageBlob, "image.png");
+      formData.append("type", "removal");
+
+      // Call API endpoint
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to remove background");
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Set the generated image if returned
+        if (result.imageUrl) {
+          setGeneratedImage(result.imageUrl);
+        }
+      } else {
+        throw new Error(result.error || "Unknown error");
+      }
+    } catch (error) {
+      console.error("Error removing background:", error);
+      alert("Failed to remove background. Please try again.");
+    } finally {
       setIsLoading(false);
-      // Reset form but keep generated image
-      setSelectedImage(null);
-    }, 2000);
+    }
   };
 
   const isSubmitDisabled = !selectedImage || isLoading;
@@ -239,6 +285,15 @@ export default function BackgroundRemoval() {
                         d="M6 18L18 6M6 6l12 12"
                       />
                     </svg>
+                  </button>
+                  <button
+                    onClick={() =>
+                      handleDownload(generatedImage, "background-removed.png")
+                    }
+                    className="absolute bottom-2 right-2 bg-blue-600 text-white px-3 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-700 transition-colors shadow-lg"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span className="text-sm font-medium">Download</span>
                   </button>
                 </div>
               ) : (

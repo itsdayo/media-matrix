@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
+import { Download } from "lucide-react";
 
 export default function Background() {
   const searchParams = useSearchParams();
@@ -16,6 +17,7 @@ export default function Background() {
   const [isDraggingPerson, setIsDraggingPerson] = useState(false);
   const [isDraggingBackground, setIsDraggingBackground] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [resultImage, setResultImage] = useState<string | null>(null);
 
   const personFileInputRef = useRef<HTMLInputElement>(null);
   const backgroundFileInputRef = useRef<HTMLInputElement>(null);
@@ -80,21 +82,67 @@ export default function Background() {
     }
   };
 
+  const handleDownload = async (
+    imageUrl: string,
+    filename: string = "generated-image.png",
+  ) => {
+    try {
+      // Create a temporary link element to trigger download
+      const link = document.createElement("a");
+      link.href = imageUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Error downloading image:", error);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!personImage || !backgroundImage) return;
 
     setIsLoading(true);
+    setResultImage(null);
 
-    // Simulate AI processing
-    setTimeout(() => {
-      alert(
-        "Background blending simulated! In a real app, this would send both images to an AI service to blend them together.",
-      );
+    try {
+      // Create FormData to send files to server
+      const formData = new FormData();
+
+      // Convert base64 to blob and append to FormData
+      const personBlob = await fetch(personImage).then((r) => r.blob());
+      const backgroundBlob = await fetch(backgroundImage).then((r) => r.blob());
+
+      formData.append("personImage", personBlob, "person.jpg");
+      formData.append("backgroundImage", backgroundBlob, "background.jpg");
+
+      // Call API endpoint instead of server action directly
+      formData.append("type", "background");
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate image");
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Optionally set result image if the API returns it
+        if (result.imageUrl) {
+          setResultImage(result.imageUrl);
+        }
+      } else {
+        throw new Error(result.error || "Unknown error");
+      }
+    } catch (error) {
+      console.error("Error blending images:", error);
+      alert("Failed to blend images. Please try again.");
+    } finally {
       setIsLoading(false);
-      // Reset form
-      setPersonImage(null);
-      setBackgroundImage(null);
-    }, 2000);
+    }
   };
 
   const isSubmitDisabled = !personImage || !backgroundImage || isLoading;
@@ -346,7 +394,7 @@ export default function Background() {
           {/* Result Preview Area */}
           <div className="flex justify-center mb-8">
             <div
-              className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl flex items-center justify-center"
+              className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl flex items-center justify-center relative overflow-hidden"
               style={{
                 width: "min(35vh, 35vw)",
                 height: "min(35vh, 35vw)",
@@ -354,27 +402,68 @@ export default function Background() {
                 maxHeight: "350px",
               }}
             >
-              <div className="text-center p-6">
-                <svg
-                  className="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              {resultImage ? (
+                <div className="w-full h-full relative rounded-2xl overflow-hidden">
+                  <Image
+                    src={resultImage}
+                    alt="Generated result"
+                    fill
+                    className="object-cover"
                   />
-                </svg>
-                <p className="text-gray-600 dark:text-gray-400 font-medium">
-                  AI will blend your images here
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-                  Upload both photos to see the result
-                </p>
-              </div>
+                  <div className="absolute top-2 left-2 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                    AI Generated
+                  </div>
+                  <button
+                    onClick={() => setResultImage(null)}
+                    className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() =>
+                      handleDownload(resultImage, "background-blended.png")
+                    }
+                    className="absolute bottom-2 right-2 bg-blue-600 text-white px-3 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-700 transition-colors shadow-lg"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span className="text-sm font-medium">Download</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="text-center p-6">
+                  <svg
+                    className="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <p className="text-gray-600 dark:text-gray-400 font-medium">
+                    AI will blend your images here
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                    Upload both photos to see the result
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
