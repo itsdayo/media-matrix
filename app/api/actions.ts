@@ -230,3 +230,81 @@ export async function backgrundRemovalGenerateImage(
 
   return null;
 }
+
+export async function imageToVideoGenerator(
+  textPrompt: string,
+  imagePath: string,
+): Promise<string | null> {
+  try {
+    // Read the image file and convert to base64
+    const imageData = fs.readFileSync(imagePath);
+    const base64Image = imageData.toString("base64");
+
+    let operation = await ai.models.generateVideos({
+      model: "veo-3.1-generate-preview",
+      prompt: textPrompt,
+      image: {
+        imageBytes: base64Image,
+        mimeType: "image/png",
+      },
+    });
+
+    // Poll the operation status until the video is ready.
+    while (!operation.done) {
+      console.log("Waiting for video generation to complete...");
+      await new Promise((resolve) => setTimeout(resolve, 10000));
+      if (operation.name) {
+        const updatedOperation = await ai.operations.getVideosOperation({
+          operation: operation,
+        });
+        if (updatedOperation) {
+          operation = updatedOperation;
+        }
+      }
+    }
+
+    // Debug: Log the complete operation response structure
+    console.log(
+      "Complete operation response:",
+      JSON.stringify(operation, null, 2),
+    );
+
+    // Check if video URI is available
+    if (operation.response?.generatedVideos?.[0]?.video?.uri) {
+      const videoUri = operation.response.generatedVideos[0].video.uri;
+      console.log("Video URI found:", videoUri);
+
+      try {
+        // Download the video from the URI with authentication
+        const response = await fetch(videoUri, {
+          headers: {
+            "x-goog-api-key": process.env.GEMINI_API_KEY || "",
+          },
+        });
+        if (!response.ok) {
+          const errorMessage = `Failed to download video: ${response.statusText}`;
+          console.error(errorMessage);
+          console.error("Response headers:", response.headers);
+          throw new Error(errorMessage);
+        }
+
+        const videoBuffer = await response.arrayBuffer();
+        const base64Video = Buffer.from(videoBuffer).toString("base64");
+        return base64Video;
+      } catch (downloadError) {
+        console.error("Error downloading video:", downloadError);
+        return null;
+      }
+    }
+
+    console.error("No video data found in operation response");
+    console.error(
+      "Available paths in response:",
+      Object.keys(operation.response || {}),
+    );
+    return null;
+  } catch (error) {
+    console.error("Error in imageToVideoGenerator:", error);
+    return null;
+  }
+}

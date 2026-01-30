@@ -1,20 +1,28 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { Download } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Download, Video } from "lucide-react";
 
-export default function BackgroundRemoval() {
+export default function ImageToVideo() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const imageUrl = searchParams.get("imageUrl");
-
-  const [selectedImage, setSelectedImage] = useState<string | null>(imageUrl);
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [inputText, setInputText] = useState("");
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [generatedVideo, setGeneratedVideo] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle URL parameters for preloaded image
+  useEffect(() => {
+    const imageUrl = searchParams.get("imageUrl");
+    if (imageUrl) {
+      setSelectedImage(imageUrl);
+    }
+  }, [searchParams]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -52,68 +60,66 @@ export default function BackgroundRemoval() {
   };
 
   const handleDownload = async (
-    imageUrl: string,
-    filename: string = "generated-image.png",
+    videoUrl: string,
+    filename: string = "generated-video.mp4",
   ) => {
     try {
       // Create a temporary link element to trigger download
       const link = document.createElement("a");
-      link.href = imageUrl;
+      link.href = videoUrl;
       link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.error("Error downloading image:", error);
+      console.error("Error downloading video:", error);
     }
   };
 
   const handleSubmit = async () => {
-    if (!selectedImage) return;
+    if (!inputText.trim() || !selectedImage) return;
 
     setIsLoading(true);
-    setGeneratedImage(null);
     setError(null);
 
     try {
-      // Create FormData to send file to server
+      // Convert base64 to blob for upload
+      const response = await fetch(selectedImage);
+      const blob = await response.blob();
+
+      // Create FormData to send the file and prompt
       const formData = new FormData();
+      formData.append("image", blob, "image.png");
+      formData.append("prompt", inputText);
+      formData.append("type", "video");
 
-      // Convert base64 to blob and append to FormData
-      const imageBlob = await fetch(selectedImage).then((r) => r.blob());
-      formData.append("image", imageBlob, "image.png");
-      formData.append("type", "removal");
-
-      // Call API endpoint
-      const response = await fetch("/api/generate", {
+      // Call API route to process the image
+      const apiResponse = await fetch("/api/generate", {
         method: "POST",
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to remove background");
-      }
-
-      const result = await response.json();
-
-      if (result.success) {
-        // Set the generated image if returned
-        if (result.imageUrl) {
-          setGeneratedImage(result.imageUrl);
+      if (apiResponse.ok) {
+        const result = await apiResponse.json();
+        if (result.success && result.videoUrl) {
+          setGeneratedVideo(result.videoUrl);
+        } else {
+          setError("Generation failed. Please try again in a moment.");
+          console.error("Failed to generate video:", result.error);
         }
       } else {
         setError("Generation failed. Please try again in a moment.");
-        throw new Error(result.error || "Unknown error");
+        console.error("API call failed");
       }
     } catch (error) {
       setError("Generation failed. Please try again in a moment.");
-      console.error("Error removing background:", error);
+      console.error("Error generating video:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const isSubmitDisabled = !selectedImage || isLoading;
+  const isSubmitDisabled = !inputText.trim() || !selectedImage || isLoading;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
@@ -121,21 +127,24 @@ export default function BackgroundRemoval() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Background Removal
+            AI Video Generation
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300">
-            Upload a photo and AI will remove the background automatically
+            Drop a photo and describe the video you want the AI to create
           </p>
         </div>
 
         {/* Main Content */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-          {/* Image Upload Area */}
+          {/* Image Dropbox */}
           <div className="flex justify-center mb-8">
-            <div
-              className={`relative border-3 border-dashed rounded-2xl transition-all duration-200 cursor-pointer ${
+            <button
+              type="button"
+              aria-label="Upload image. Click to select or drag and drop"
+              aria-describedby="upload-instructions"
+              className={`relative border-3 border-dashed rounded-2xl transition-all duration-200 cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 ${
                 isDragging
-                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                  ? "border-red-500 bg-red-50 dark:bg-red-900/20"
                   : selectedImage
                     ? "border-green-500 bg-green-50 dark:bg-green-900/20"
                     : "border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 hover:border-gray-400 dark:hover:border-gray-500"
@@ -195,7 +204,7 @@ export default function BackgroundRemoval() {
                   <svg
                     className={`w-12 h-12 mb-4 transition-colors ${
                       isDragging
-                        ? "text-blue-500"
+                        ? "text-red-500"
                         : "text-gray-400 dark:text-gray-500"
                     }`}
                     fill="none"
@@ -212,53 +221,25 @@ export default function BackgroundRemoval() {
                   <p
                     className={`text-center font-medium transition-colors ${
                       isDragging
-                        ? "text-blue-600 dark:text-blue-400"
+                        ? "text-red-600 dark:text-red-400"
                         : "text-gray-600 dark:text-gray-400"
                     }`}
                   >
                     {isDragging ? "Drop image here" : "Drop your photo here"}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                  <p
+                    id="upload-instructions"
+                    className="text-xs text-gray-500 dark:text-gray-500 mt-2"
+                  >
                     or click to browse
                   </p>
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="flex justify-center mb-4">
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                <p className="text-sm font-medium">{error}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Submit Button */}
-          <div className="flex justify-center mb-8">
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitDisabled}
-              className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 ${
-                isSubmitDisabled
-                  ? "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-              }`}
-            >
-              {isLoading ? (
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Removing Background...</span>
-                </div>
-              ) : (
-                "Remove Background"
               )}
             </button>
           </div>
 
           {/* AI Result Preview */}
-          <div className="flex justify-center">
+          <div className="flex justify-center mb-8">
             <div
               className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl flex items-center justify-center bg-gray-50 dark:bg-gray-900"
               style={{
@@ -268,21 +249,23 @@ export default function BackgroundRemoval() {
                 maxHeight: "350px",
               }}
             >
-              {generatedImage ? (
+              {generatedVideo ? (
                 <div className="w-full h-full relative rounded-2xl overflow-hidden">
-                  <Image
-                    preload={true}
-                    src={generatedImage}
-                    alt="Background removed image"
-                    fill
-                    className="object-cover"
+                  <video
+                    src={generatedVideo}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover"
                   />
-                  <div className="absolute top-2 left-2 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                    Background Removed
+                  <div className="absolute top-2 left-2 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center space-x-1">
+                    <Video className="w-3 h-3" />
+                    <span>AI Generated</span>
                   </div>
                   <button
-                    onClick={() => setGeneratedImage(null)}
-                    className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
+                    onClick={() => setGeneratedVideo(null)}
+                    className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors shadow-lg"
                   >
                     <svg
                       className="w-4 h-4"
@@ -300,7 +283,7 @@ export default function BackgroundRemoval() {
                   </button>
                   <button
                     onClick={() =>
-                      handleDownload(generatedImage, "background-removed.png")
+                      handleDownload(generatedVideo, "ai-generated-video.mp4")
                     }
                     className="absolute bottom-2 right-2 bg-blue-600 text-white px-3 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-700 transition-colors shadow-lg"
                   >
@@ -310,28 +293,65 @@ export default function BackgroundRemoval() {
                 </div>
               ) : (
                 <div className="text-center p-6">
-                  <svg
-                    className="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                    />
-                  </svg>
+                  <Video className="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
                   <p className="text-gray-600 dark:text-gray-400 font-medium">
-                    AI will remove background here
+                    AI will create your video here
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-                    Upload a photo to see the result
+                    Upload a photo and describe the video you want
                   </p>
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Text Input */}
+          <div className="mb-8">
+            <label
+              htmlFor="prompt"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Describe the video you want to create
+            </label>
+            <textarea
+              id="prompt"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              placeholder="Make this person walk slowly towards the camera with a gentle smile..."
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700"
+              rows={4}
+            />
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="flex justify-center mb-4">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                <p className="text-sm font-medium">{error}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <div className="flex justify-center">
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitDisabled}
+              className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 ${
+                isSubmitDisabled
+                  ? "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              }`}
+            >
+              {isLoading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Generating Video...</span>
+                </div>
+              ) : (
+                "Generate Video"
+              )}
+            </button>
           </div>
 
           {/* Instructions */}
@@ -340,9 +360,12 @@ export default function BackgroundRemoval() {
               How it works:
             </h3>
             <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-              <li>1. Upload a photo with a background</li>
-              <li>2. Click &quot;Remove Background&quot; to process</li>
-              <li>3. AI will automatically detect and remove the background</li>
+              <li>1. Drop a photo in the box above</li>
+              <li>2. Describe the video motion you want</li>
+              <li>
+                3. Click &quot;Generate Video&quot; to create your animated
+                video
+              </li>
             </ol>
           </div>
         </div>

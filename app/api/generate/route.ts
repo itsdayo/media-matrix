@@ -4,18 +4,21 @@ import {
   chatGenerateImage,
   backgroundGenerateImage,
   backgrundRemovalGenerateImage,
+  imageToVideoGenerator,
 } from "@/app/api/actions";
 import * as fs from "node:fs";
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const type = formData.get("type") as string; // "chat", "background", or "removal"
+    const type = formData.get("type") as string; // "chat", "background", "removal", or "video"
 
     if (type === "background") {
       return handleBackgroundGeneration(formData);
     } else if (type === "removal") {
       return handleBackgroundRemoval(formData);
+    } else if (type === "video") {
+      return handleVideoGeneration(formData);
     } else {
       return handleChatGeneration(formData);
     }
@@ -149,6 +152,45 @@ async function handleBackgroundRemoval(formData: FormData) {
   } else {
     return NextResponse.json(
       { success: false, error: "Failed to remove background" },
+      { status: 500 },
+    );
+  }
+}
+
+async function handleVideoGeneration(formData: FormData) {
+  const image = formData.get("image") as File;
+  const prompt = formData.get("prompt") as string;
+
+  if (!image || !prompt) {
+    return NextResponse.json(
+      { success: false, error: "Missing image or prompt" },
+      { status: 400 },
+    );
+  }
+
+  // Create temporary file in /tmp directory
+  const tempDir = "/tmp";
+  const imagePath = join(tempDir, `video-${Date.now()}.png`);
+
+  // Write file to disk
+  const imageBuffer = Buffer.from(await image.arrayBuffer());
+  fs.writeFileSync(imagePath, imageBuffer);
+
+  // Process the image with AI and get base64 video result
+  const base64Result = await imageToVideoGenerator(prompt, imagePath);
+
+  // Clean up temporary file
+  fs.unlinkSync(imagePath);
+
+  if (base64Result) {
+    const videoUrl = `data:video/mp4;base64,${base64Result}`;
+    return NextResponse.json({
+      success: true,
+      videoUrl: videoUrl,
+    });
+  } else {
+    return NextResponse.json(
+      { success: false, error: "Failed to generate video" },
       { status: 500 },
     );
   }

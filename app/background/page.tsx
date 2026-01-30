@@ -17,6 +17,7 @@ export default function Background() {
   const [isDraggingPerson, setIsDraggingPerson] = useState(false);
   const [isDraggingBackground, setIsDraggingBackground] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<string | null>(null);
 
   const personFileInputRef = useRef<HTMLInputElement>(null);
@@ -104,6 +105,7 @@ export default function Background() {
 
     setIsLoading(true);
     setResultImage(null);
+    setError(null);
 
     try {
       // Create FormData to send files to server
@@ -135,11 +137,12 @@ export default function Background() {
           setResultImage(result.imageUrl);
         }
       } else {
+        setError("Generation failed. Please try again in a moment.");
         throw new Error(result.error || "Unknown error");
       }
     } catch (error) {
+      setError("Generation failed. Please try again in a moment.");
       console.error("Error blending images:", error);
-      alert("Failed to blend images. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -466,6 +469,15 @@ export default function Background() {
               )}
             </div>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="flex justify-center mb-4">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                <p className="text-sm font-medium">{error}</p>
+              </div>
+            </div>
+          )}
 
           {/* Submit Button */}
           <div className="flex justify-center">

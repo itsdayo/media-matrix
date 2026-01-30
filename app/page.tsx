@@ -1,5 +1,5 @@
 "use client";
-import { BotMessageSquare, Wallpaper, ImageMinus } from "lucide-react";
+import { BotMessageSquare, Wallpaper, ImageMinus, Video } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -26,7 +26,7 @@ const features = [
     title: "Setting manipulation",
     description:
       "Upload your own image along with the setting image you want to apply",
-    color: "green",
+    color: "white",
     steps: [
       "Upload your main subject image",
       "Choose or upload the background/setting image",
@@ -40,11 +40,25 @@ const features = [
     url: "/background-removal",
     title: "Background Removal",
     description: "Apply a transparent background to your image",
-    color: "purple",
+    color: "indigo",
     steps: [
       "Upload the image you want to edit",
       "AI automatically detects and removes the background",
       "Download your image with transparent background",
+    ],
+  },
+  {
+    id: "image-to-video",
+    icon: Video,
+    title: "Image to Video Creation",
+    url: "/image-to-video",
+    description: "Create a video from an image",
+    color: "red",
+    steps: [
+      "Upload your image to the AI chat interface",
+      "Describe the video you want using natural language",
+      "AI analyzes your request and applies the changes in real-time",
+      "Download your video",
     ],
   },
 ];
@@ -153,6 +167,18 @@ export default function Home() {
                 blue: isSelected ? "border-blue-500" : "border-transparent",
                 green: isSelected ? "border-green-500" : "border-transparent",
                 purple: isSelected ? "border-purple-500" : "border-transparent",
+                red: isSelected ? "border-red-500" : "border-transparent",
+                white: isSelected ? "border-gray-400" : "border-transparent",
+                indigo: isSelected ? "border-indigo-500" : "border-transparent",
+              }[feature.color];
+
+              const iconColorClass = {
+                blue: "text-blue-600 dark:text-blue-400",
+                green: "text-green-600 dark:text-green-400",
+                purple: "text-purple-600 dark:text-purple-400",
+                red: "text-red-600 dark:text-red-400",
+                white: "text-gray-600 dark:text-gray-400",
+                indigo: "text-indigo-600 dark:text-indigo-400",
               }[feature.color];
 
               return (
@@ -162,7 +188,7 @@ export default function Home() {
                   className={`text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 transition-all hover:shadow-lg ${borderColorClass}`}
                 >
                   <Icon
-                    className={`w-12 h-12 text-${feature.color}-600 dark:text-${feature.color}-400 mx-auto mb-4`}
+                    className={`w-12 h-12 ${iconColorClass} mx-auto mb-4`}
                   />
                   <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                     {feature.title}

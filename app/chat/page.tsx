@@ -13,6 +13,7 @@ export default function Chat() {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -71,6 +72,7 @@ export default function Chat() {
     if (!inputText.trim() || !selectedImage) return;
 
     setIsLoading(true);
+    setError(null);
 
     try {
       // Convert base64 to blob for upload
@@ -93,14 +95,17 @@ export default function Chat() {
         if (result.success && result.imageUrl) {
           setGeneratedImage(result.imageUrl);
         } else {
+          setError("Generation failed. Please try again in a moment.");
           // Fallback to original image if processing fails
           setGeneratedImage(selectedImage);
         }
       } else {
+        setError("Generation failed. Please try again in a moment.");
         console.error("API call failed");
         setGeneratedImage(selectedImage);
       }
     } catch (error) {
+      setError("Generation failed. Please try again in a moment.");
       console.error("Error generating image:", error);
       // Fallback to original image on error
       setGeneratedImage(selectedImage);
@@ -316,6 +321,15 @@ export default function Chat() {
               rows={4}
             />
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="flex justify-center mb-4">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                <p className="text-sm font-medium">{error}</p>
+              </div>
+            </div>
+          )}
 
           {/* Submit Button */}
           <div className="flex justify-center">

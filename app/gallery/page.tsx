@@ -3,7 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { BotMessageSquare, User, Wallpaper, ImageMinus } from "lucide-react";
+import {
+  BotMessageSquare,
+  User,
+  Wallpaper,
+  ImageMinus,
+  Video,
+} from "lucide-react";
 import { getUnsplashImages } from "../api/actions";
 
 interface ImageResult {
@@ -85,7 +91,7 @@ export default function Gallery() {
       setImages(results.images);
       setCurrentPage(results.currentPage);
       setTotalPages(results.totalPages);
-      setTotalResults(results.totalResults);
+      setTotalResults(results.totalResults || 0);
     } catch (err) {
       console.error(err);
       setError("Failed to fetch images. Please try again.");
@@ -168,6 +174,15 @@ export default function Gallery() {
       imageThumbnail: image.thumbnail,
     });
     router.push(`/background-removal?${params.toString()}`);
+  };
+
+  const handleImageToVideoNavigation = (image: ImageResult) => {
+    const params = new URLSearchParams({
+      imageUrl: image.url,
+      imageTitle: image.title,
+      imageThumbnail: image.thumbnail,
+    });
+    router.push(`/image-to-video?${params.toString()}`);
   };
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -298,6 +313,15 @@ export default function Gallery() {
                       title="Background Removal"
                     >
                       <ImageMinus size={16} />
+                    </button>
+
+                    {/* Video Button */}
+                    <button
+                      onClick={() => handleImageToVideoNavigation(image)}
+                      className="p-2 bg-orange-600 text-white rounded-full hover:bg-orange-700 transition-colors shadow-lg"
+                      title="Generate Video"
+                    >
+                      <Video size={16} />
                     </button>
                   </div>
 
