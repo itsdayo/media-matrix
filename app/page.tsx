@@ -78,11 +78,11 @@ export default function Home() {
             {/* Left side - Text content */}
             <div className="text-center lg:text-left">
               <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                AI-Powered Photo Generation
+                AI-Powered Photo and Video Generation
               </h2>
               <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto lg:mx-0">
                 Transform your ideas into stunning visuals with our advanced AI
-                photo generator
+                photo and video generator
               </p>
               <button
                 onClick={() =>
@@ -159,7 +159,7 @@ export default function Home() {
           <h3 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
             Powerful Features
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="flex flex-wrap justify-center gap-8">
             {features.map((feature) => {
               const Icon = feature.icon;
               const isSelected = selectedFeature.id === feature.id;
@@ -185,7 +185,7 @@ export default function Home() {
                 <button
                   key={feature.id}
                   onClick={() => setSelectedFeature(feature)}
-                  className={`text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 transition-all hover:shadow-lg ${borderColorClass}`}
+                  className={`text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 transition-all hover:shadow-lg w-80 ${borderColorClass}`}
                 >
                   <Icon
                     className={`w-12 h-12 ${iconColorClass} mx-auto mb-4`}
@@ -249,7 +249,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-600 to-indigo-600">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-black to-bg-[#1E1F20]">
         <div className="max-w-4xl mx-auto text-center">
           <h3 className="text-3xl font-bold text-white mb-4">
             Ready to Create Amazing Images?
@@ -258,10 +258,10 @@ export default function Home() {
             Join thousands of creators using AI to bring their visions to life
           </p>
           <div className="space-x-4">
-            <button className="bg-white text-blue-600 hover:bg-gray-100 font-semibold py-3 px-8 rounded-lg transition-colors">
-              Get Started Free
-            </button>
-            <button className="border-2 border-white text-white hover:bg-white hover:text-blue-600 font-semibold py-3 px-8 rounded-lg transition-colors">
+            <button
+              onClick={() => router.push("/gallery")}
+              className="border-2 border-white text-white hover:bg-white hover:text-blue-600 font-semibold py-3 px-8 rounded-lg transition-colors"
+            >
               View Gallery
             </button>
           </div>

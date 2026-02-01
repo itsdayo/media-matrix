@@ -156,7 +156,7 @@ export default function Background() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Background Setting
+            Background
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300">
             Upload a person photo and a background to create your perfect scene
@@ -273,7 +273,7 @@ export default function Background() {
             {/* Background Image */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">
-                Background Setting
+                Background
               </h3>
               <div className="flex justify-center">
                 <button
@@ -508,7 +508,7 @@ export default function Background() {
             </h3>
             <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
               <li>1. Upload a photo of a person on the left</li>
-              <li>2. Upload a background setting on the right</li>
+              <li>2. Upload a background on the right</li>
               <li>
                 3. Click &quot;Blend Images&quot; to create your perfect scene
               </li>

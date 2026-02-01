@@ -7,7 +7,7 @@ An AI-powered photo generation and manipulation platform built with Next.js, Typ
 ### AI Image Generation
 
 - **Chat-based Modifications**: Upload images and describe changes using natural language
-- **Background Setting**: Combine person photos with custom backgrounds
+- **Background**: Combine person photos with custom backgrounds
 - **Background Removal**: Automatically remove backgrounds from images
 
 ### Image Gallery
@@ -106,7 +106,7 @@ media-matrix/
 - AI result preview area
 - Pre-loaded images from gallery navigation
 
-### Background Setting (`/background`)
+### Background (`/background`)
 
 - Dual upload areas for person and background images
 - Visual preview of blended result
