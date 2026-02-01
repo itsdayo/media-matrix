@@ -1,5 +1,5 @@
 "use client";
-import { BotMessageSquare, Wallpaper, ImageMinus, Video } from "lucide-react";
+import { BotMessageSquare, Wallpaper, Video, ImagePlus } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -35,16 +35,17 @@ const features = [
     ],
   },
   {
-    id: "background-removal",
-    icon: ImageMinus,
-    url: "/background-removal",
-    title: "Background Removal",
-    description: "Apply a transparent background to your image",
+    id: "background-color",
+    icon: ImagePlus,
+    url: "/background-color",
+    title: "Background Color",
+    description: "Apply a background color to your image",
     color: "indigo",
     steps: [
       "Upload the image you want to edit",
-      "AI automatically detects and removes the background",
-      "Download your image with transparent background",
+      "Select a background color",
+      "AI automatically applies the background color",
+      "Download your image with the new background color",
     ],
   },
   {

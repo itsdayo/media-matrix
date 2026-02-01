@@ -7,7 +7,7 @@ import {
   BotMessageSquare,
   User,
   Wallpaper,
-  ImageMinus,
+  ImagePlus,
   Video,
 } from "lucide-react";
 import { getUnsplashImages } from "../api/actions";
@@ -167,13 +167,13 @@ export default function Gallery() {
     router.push(`/background?${params.toString()}`);
   };
 
-  const handleBackgroundRemovalNavigation = (image: ImageResult) => {
+  const handleBackgroundColorNavigation = (image: ImageResult) => {
     const params = new URLSearchParams({
       imageUrl: image.url,
       imageTitle: image.title,
       imageThumbnail: image.thumbnail,
     });
-    router.push(`/background-removal?${params.toString()}`);
+    router.push(`/background-color?${params.toString()}`);
   };
 
   const handleImageToVideoNavigation = (image: ImageResult) => {
@@ -306,13 +306,13 @@ export default function Gallery() {
                       <Wallpaper size={16} />
                     </button>
 
-                    {/* Background Removal Button */}
+                    {/* Background Color Button */}
                     <button
-                      onClick={() => handleBackgroundRemovalNavigation(image)}
-                      className="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-lg"
-                      title="Background Removal"
+                      onClick={() => handleBackgroundColorNavigation(image)}
+                      className="p-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors shadow-lg"
+                      title="Background Color"
                     >
-                      <ImageMinus size={16} />
+                      <ImagePlus size={16} />
                     </button>
 
                     {/* Video Button */}

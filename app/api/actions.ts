@@ -148,7 +148,7 @@ export async function backgroundGenerateImage(
   ];
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-pro-image-preview",
+    model: "gemini-2.0-flash-exp",
     contents: contents,
     config: {
       responseModalities: ["TEXT", "IMAGE"],
@@ -170,6 +170,56 @@ export async function backgroundGenerateImage(
     if (part.text) {
       console.log(part.text);
     } else if (part.inlineData) {
+      const imageData = part.inlineData.data;
+      if (imageData) {
+        return imageData; // Return the base64 image data
+      }
+    }
+  }
+
+  return null;
+}
+
+export async function backgroundColorChangeImage(
+  imagePath: string,
+  backgroundColor: string,
+): Promise<string | null> {
+  const imageData = fs.readFileSync(imagePath);
+  const base64Image = imageData.toString("base64");
+
+  const contents = [
+    {
+      text: `Please change the background color of this image to ${backgroundColor}. Keep the main subject (person, object, etc.) exactly the same and only modify the background. Make sure the color change looks natural and maintains proper lighting and shadows. The background should be a solid ${backgroundColor} color.`,
+    },
+    {
+      inlineData: {
+        mimeType: "image/jpeg",
+        data: base64Image,
+      },
+    },
+  ];
+
+  const response = await ai.models.generateContent({
+    model: "gemini-3-pro-image-preview",
+    contents: contents,
+    config: {
+      responseModalities: ["TEXT", "IMAGE"],
+    },
+  });
+
+  if (!response.candidates || response.candidates.length === 0) {
+    console.error("No candidates in response");
+    return null;
+  }
+
+  const candidate = response.candidates[0];
+  if (!candidate.content?.parts) {
+    console.error("No content or parts in candidate");
+    return null;
+  }
+
+  for (const part of candidate.content.parts) {
+    if (part.inlineData) {
       const imageData = part.inlineData.data;
       if (imageData) {
         return imageData; // Return the base64 image data

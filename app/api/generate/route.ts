@@ -3,7 +3,7 @@ import { join } from "node:path";
 import {
   chatGenerateImage,
   backgroundGenerateImage,
-  backgrundRemovalGenerateImage,
+  backgroundColorChangeImage,
   imageToVideoGenerator,
 } from "@/app/api/actions";
 import * as fs from "node:fs";
@@ -11,12 +11,12 @@ import * as fs from "node:fs";
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const type = formData.get("type") as string; // "chat", "background", "removal", or "video"
+    const type = formData.get("type") as string; // "chat", "background", "background-color", or "video"
 
     if (type === "background") {
       return handleBackgroundGeneration(formData);
-    } else if (type === "removal") {
-      return handleBackgroundRemoval(formData);
+    } else if (type === "background-color") {
+      return handleBackgroundColorChange(formData);
     } else if (type === "video") {
       return handleVideoGeneration(formData);
     } else {
@@ -118,26 +118,39 @@ async function handleBackgroundGeneration(formData: FormData) {
   }
 }
 
-async function handleBackgroundRemoval(formData: FormData) {
+async function handleBackgroundColorChange(formData: FormData) {
   const image = formData.get("image") as File;
+  const backgroundColor = formData.get("backgroundColor") as string;
 
-  if (!image) {
+  if (!image || !backgroundColor) {
     return NextResponse.json(
-      { error: "Image is required for background removal" },
+      { error: "Image and background color are required" },
+      { status: 400 },
+    );
+  }
+
+  // Validate hex color format
+  const hexColorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+  if (!hexColorRegex.test(backgroundColor)) {
+    return NextResponse.json(
+      { error: "Invalid hex color format" },
       { status: 400 },
     );
   }
 
   // Create temporary file
   const tempDir = "/tmp";
-  const imagePath = join(tempDir, `removal-${Date.now()}.png`);
+  const imagePath = join(tempDir, `color-change-${Date.now()}.png`);
 
   // Write file to disk
   const imageBuffer = Buffer.from(await image.arrayBuffer());
   fs.writeFileSync(imagePath, imageBuffer);
 
-  // Call the background removal function and get base64 result
-  const base64Result = await backgrundRemovalGenerateImage(imagePath);
+  // Call the background color change function and get base64 result
+  const base64Result = await backgroundColorChangeImage(
+    imagePath,
+    backgroundColor,
+  );
 
   // Clean up temporary file
   fs.unlinkSync(imagePath);
@@ -147,11 +160,11 @@ async function handleBackgroundRemoval(formData: FormData) {
     return NextResponse.json({
       success: true,
       imageUrl,
-      message: "Background removal completed successfully",
+      message: "Background color change completed successfully",
     });
   } else {
     return NextResponse.json(
-      { success: false, error: "Failed to remove background" },
+      { success: false, error: "Failed to change background color" },
       { status: 500 },
     );
   }

@@ -8,7 +8,7 @@ An AI-powered photo generation and manipulation platform built with Next.js, Typ
 
 - **Chat-based Modifications**: Upload images and describe changes using natural language
 - **Background**: Combine person photos with custom backgrounds
-- **Background Removal**: Automatically remove backgrounds from images
+- **Background Color**: Automatically apply a background color to images
 
 ### Image Gallery
 
@@ -75,8 +75,8 @@ media-matrix/
 │   │   └── page.tsx            # AI chat interface
 │   ├── background/
 │   │   └── page.tsx            # Background setting tool
-│   ├── background-removal/
-│   │   └── page.tsx            # Background removal tool
+│   ├── background-color/
+│   │   └── page.tsx            # Background color tool
 │   ├── gallery/
 │   │   └── page.tsx            # Image gallery with search
 │   ├── layout.tsx               # Root layout
@@ -113,7 +113,7 @@ media-matrix/
 - Separate handling for person and background uploads
 - Smart navigation from gallery
 
-### Background Removal (`/background-removal`)
+### Background Color (`/background-color`)
 
 - Single image upload interface
 - Automatic background processing
@@ -127,7 +127,7 @@ media-matrix/
   - 🤖 **ChatBot**: Send to AI chat
   - 👤 **Person**: Set as person in background tool
   - 🖼️ **Background**: Set as background in background tool
-  - ✂️ **Remove**: Send to background removal tool
+  - ✂️ **Remove**: Send to background color tool
 - Persistent search across navigation
 - Clear search functionality
 
@@ -139,7 +139,7 @@ Images are passed between pages using URL parameters:
 
 - `/chat?imageUrl=...&imageTitle=...&imageThumbnail=...`
 - `/background?personUrl=...&backgroundUrl=...`
-- `/background-removal?imageUrl=...`
+- `/background-color?imageUrl=...`
 
 ### State Management
 

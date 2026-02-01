@@ -17,6 +17,11 @@ export const metadata: Metadata = {
   title: "Media Matrix - AI Photo and Video Generator",
   description:
     "Transform your ideas into stunning visuals with our advanced AI photo and video generator",
+  icons: {
+    icon: "/images/mmicon.png",
+    shortcut: "/images/mmicon.png",
+    apple: "/images/mmicon.png",
+  },
 };
 
 export default function RootLayout({

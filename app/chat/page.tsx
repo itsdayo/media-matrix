@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Download } from "lucide-react";
 
-export default function Chat() {
+function ChatPage() {
   const searchParams = useSearchParams();
   const imageUrl = searchParams.get("imageUrl");
   const [inputText, setInputText] = useState("");
@@ -369,5 +369,19 @@ export default function Chat() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Chat() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+          <div className="text-gray-600 dark:text-gray-300">Loading...</div>
+        </div>
+      }
+    >
+      <ChatPage />
+    </Suspense>
   );
 }

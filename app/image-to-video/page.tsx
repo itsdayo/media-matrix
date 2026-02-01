@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Download, Video } from "lucide-react";
 
-export default function ImageToVideo() {
+function ImageToVideoPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [inputText, setInputText] = useState("");
@@ -371,5 +371,19 @@ export default function ImageToVideo() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ImageToVideo() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+          <div className="text-gray-600 dark:text-gray-300">Loading...</div>
+        </div>
+      }
+    >
+      <ImageToVideoPage />
+    </Suspense>
   );
 }

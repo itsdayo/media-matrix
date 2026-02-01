@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Download } from "lucide-react";
 
-export default function Background() {
+function BackgroundPage() {
   const searchParams = useSearchParams();
   const personUrl = searchParams.get("personUrl");
   const backgroundUrl = searchParams.get("backgroundUrl");
@@ -517,5 +517,19 @@ export default function Background() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Background() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+          <div className="text-gray-600 dark:text-gray-300">Loading...</div>
+        </div>
+      }
+    >
+      <BackgroundPage />
+    </Suspense>
   );
 }

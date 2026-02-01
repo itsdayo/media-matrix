@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Navigation() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -28,7 +29,15 @@ export default function Navigation() {
     <nav className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
+          <div className="flex items-center space-x-3">
+            <Image
+              preload={true}
+              src="/images/mmicon.png"
+              alt="Media Matrix Icon"
+              width={32}
+              height={32}
+              unoptimized={true}
+            />
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">
               Media Matrix
             </h1>
@@ -65,11 +74,11 @@ export default function Navigation() {
                     Background
                   </Link>
                   <Link
-                    href="/background-removal"
+                    href="/background-color"
                     className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                     onClick={() => setIsDropdownOpen(false)}
                   >
-                    Background Removal
+                    Background Color
                   </Link>
                   <Link
                     href="/image-to-video"
