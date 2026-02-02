@@ -185,7 +185,12 @@ export default function Home() {
               return (
                 <button
                   key={feature.id}
-                  onClick={() => setSelectedFeature(feature)}
+                  onClick={() => {
+                    setSelectedFeature(feature);
+                    document
+                      .getElementById("how-it-works")
+                      ?.scrollIntoView({ behavior: "smooth" });
+                  }}
                   className={`text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 transition-all hover:shadow-lg w-80 ${borderColorClass}`}
                 >
                   <Icon
@@ -205,7 +210,10 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
+      <section
+        id="how-it-works"
+        className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900"
+      >
         <div className="max-w-7xl mx-auto">
           <h3 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
             How It Works

@@ -71,36 +71,36 @@ async function handleChatGeneration(formData: FormData) {
 }
 
 async function handleBackgroundGeneration(formData: FormData) {
-  const personImage = formData.get("personImage") as File;
+  const foregroundImage = formData.get("foregroundImage") as File;
   const backgroundImage = formData.get("backgroundImage") as File;
 
-  if (!personImage || !backgroundImage) {
+  if (!foregroundImage || !backgroundImage) {
     return NextResponse.json(
-      { error: "Both person and background images are required" },
+      { error: "Both foreground and background images are required" },
       { status: 400 },
     );
   }
 
   // Create temporary files
   const tempDir = "/tmp";
-  const personPath = join(tempDir, `person-${Date.now()}.jpg`);
+  const foregroundPath = join(tempDir, `foreground-${Date.now()}.jpg`);
   const backgroundPath = join(tempDir, `background-${Date.now()}.jpg`);
 
   // Write files to disk
-  const personBuffer = Buffer.from(await personImage.arrayBuffer());
+  const foregroundBuffer = Buffer.from(await foregroundImage.arrayBuffer());
   const backgroundBuffer = Buffer.from(await backgroundImage.arrayBuffer());
 
-  fs.writeFileSync(personPath, personBuffer);
+  fs.writeFileSync(foregroundPath, foregroundBuffer);
   fs.writeFileSync(backgroundPath, backgroundBuffer);
 
   // Call the background generation function and get base64 result
   const base64Result = await backgroundGenerateImage(
-    personPath,
+    foregroundPath,
     backgroundPath,
   );
 
   // Clean up temporary files
-  fs.unlinkSync(personPath);
+  fs.unlinkSync(foregroundPath);
   fs.unlinkSync(backgroundPath);
 
   if (base64Result) {

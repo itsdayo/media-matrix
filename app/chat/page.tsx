@@ -161,13 +161,21 @@ function ChatPage() {
               />
 
               {selectedImage ? (
-                <div className="w-full h-full relative rounded-2xl overflow-hidden">
+                <div className="flex relative rounded-2xl items-center justify-center h-full w-full">
                   <Image
                     preload={true}
                     src={selectedImage}
                     alt="Selected image"
-                    fill
-                    className="object-cover"
+                    width={375}
+                    height={375}
+                    className="object-center"
+                    style={{
+                      width: "min(30vh, 30vw)",
+                      height: "min(31vh, 31vw)",
+                      maxWidth: "375px",
+                      maxHeight: "375px",
+                      margin: "auto",
+                    }}
                   />
                   <button
                     onClick={(e) => {

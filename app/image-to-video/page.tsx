@@ -169,13 +169,20 @@ function ImageToVideoPage() {
               />
 
               {selectedImage ? (
-                <div className="w-full h-full relative rounded-2xl overflow-hidden">
+                <div className="flex relative rounded-2xl items-center justify-center h-full w-full">
                   <Image
                     preload={true}
                     src={selectedImage}
                     alt="Selected image"
-                    fill
-                    className="object-cover"
+                    width={375}
+                    height={375}
+                    style={{
+                      width: "min(30vh, 30vw)",
+                      height: "min(31vh, 31vw)",
+                      maxWidth: "375px",
+                      maxHeight: "375px",
+                      margin: "auto",
+                    }}
                   />
                   <button
                     onClick={(e) => {
@@ -317,7 +324,7 @@ function ImageToVideoPage() {
               id="prompt"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Make this person walk slowly towards the camera with a gentle smile..."
+              placeholder="Make this foreground subject walk slowly towards the camera with a gentle smile..."
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700"
               rows={4}
             />

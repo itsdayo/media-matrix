@@ -120,10 +120,10 @@ export async function chatGenerateImage(
 }
 
 export async function backgroundGenerateImage(
-  personImagePath: string,
+  foregroundImagePath: string,
   backgroundImagePath: string,
 ): Promise<string | null> {
-  const imageData = fs.readFileSync(personImagePath);
+  const imageData = fs.readFileSync(foregroundImagePath);
   const base64Image = imageData.toString("base64");
 
   const backgroundImageData = fs.readFileSync(backgroundImagePath);
@@ -131,7 +131,7 @@ export async function backgroundGenerateImage(
 
   const contents = [
     {
-      text: "Please take the person from the first image and place them into the background scene from the second image. Make the integration look natural and seamless.",
+      text: "Please take the foreground subject from the first image and place them into the background scene from the second image. Make the integration look natural and seamless.",
     },
     {
       inlineData: {
@@ -148,7 +148,7 @@ export async function backgroundGenerateImage(
   ];
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.0-flash-exp",
+    model: "gemini-3-pro-image-preview",
     contents: contents,
     config: {
       responseModalities: ["TEXT", "IMAGE"],
@@ -189,7 +189,7 @@ export async function backgroundColorChangeImage(
 
   const contents = [
     {
-      text: `Please change the background color of this image to ${backgroundColor}. Keep the main subject (person, object, etc.) exactly the same and only modify the background. Make sure the color change looks natural and maintains proper lighting and shadows. The background should be a solid ${backgroundColor} color.`,
+      text: `Please change the background color of this image to ${backgroundColor}. Keep the main subject (foreground, object, etc.) exactly the same and only modify the background. Make sure the color change looks natural and maintains proper lighting and shadows. The background should be a solid ${backgroundColor} color.`,
     },
     {
       inlineData: {
@@ -220,57 +220,6 @@ export async function backgroundColorChangeImage(
 
   for (const part of candidate.content.parts) {
     if (part.inlineData) {
-      const imageData = part.inlineData.data;
-      if (imageData) {
-        return imageData; // Return the base64 image data
-      }
-    }
-  }
-
-  return null;
-}
-
-export async function backgrundRemovalGenerateImage(
-  imagePath: string,
-): Promise<string | null> {
-  const imageData = fs.readFileSync(imagePath);
-  const base64Image = imageData.toString("base64");
-
-  const prompt = [
-    {
-      text: "Please remove the background from this image and make it completely transparent. Keep the main subject intact and ensure clean edges around the subject.",
-    },
-    {
-      inlineData: {
-        mimeType: "image/png",
-        data: base64Image,
-      },
-    },
-  ];
-
-  const response = await ai.models.generateContent({
-    model: "gemini-3-pro-image-preview",
-    contents: prompt,
-    config: {
-      responseModalities: ["TEXT", "IMAGE"],
-    },
-  });
-
-  if (!response.candidates || response.candidates.length === 0) {
-    console.error("No candidates in response");
-    return null;
-  }
-
-  const candidate = response.candidates[0];
-  if (!candidate.content?.parts) {
-    console.error("No content or parts in candidate");
-    return null;
-  }
-
-  for (const part of candidate.content.parts) {
-    if (part.text) {
-      console.log(part.text);
-    } else if (part.inlineData) {
       const imageData = part.inlineData.data;
       if (imageData) {
         return imageData; // Return the base64 image data

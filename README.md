@@ -7,7 +7,7 @@ An AI-powered photo generation and manipulation platform built with Next.js, Typ
 ### AI Image Generation
 
 - **Chat-based Modifications**: Upload images and describe changes using natural language
-- **Background**: Combine person photos with custom backgrounds
+- **Background**: Combine foreground images with custom backgrounds
 - **Background Color**: Automatically apply a background color to images
 
 ### Image Gallery
@@ -108,9 +108,9 @@ media-matrix/
 
 ### Background (`/background`)
 
-- Dual upload areas for person and background images
+- Dual upload areas for foreground and background images
 - Visual preview of blended result
-- Separate handling for person and background uploads
+- Separate handling for foreground and background uploads
 - Smart navigation from gallery
 
 ### Background Color (`/background-color`)
@@ -125,7 +125,7 @@ media-matrix/
 - Unsplash image search with 3-second debounce
 - Four action buttons per image:
   - 🤖 **ChatBot**: Send to AI chat
-  - 👤 **Person**: Set as person in background tool
+  - 👤 **Foreground**: Set as foreground in background tool
   - 🖼️ **Background**: Set as background in background tool
   - ✂️ **Remove**: Send to background color tool
 - Persistent search across navigation
@@ -138,7 +138,7 @@ media-matrix/
 Images are passed between pages using URL parameters:
 
 - `/chat?imageUrl=...&imageTitle=...&imageThumbnail=...`
-- `/background?personUrl=...&backgroundUrl=...`
+- `/background?foregroundUrl=...&backgroundUrl=...`
 - `/background-color?imageUrl=...`
 
 ### State Management

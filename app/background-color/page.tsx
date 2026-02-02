@@ -1,16 +1,26 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Upload, Download, Palette } from "lucide-react";
 import Image from "next/image";
 
 export default function BackgroundColor() {
+  const searchParams = useSearchParams();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [backgroundColor, setBackgroundColor] = useState("#ffffff");
   const [processedImage, setProcessedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle URL parameters from gallery navigation
+  useEffect(() => {
+    const imageUrl = searchParams.get("imageUrl");
+    if (imageUrl) {
+      setSelectedImage(imageUrl);
+    }
+  }, [searchParams]);
 
   const handleImageUpload = (file: File) => {
     const reader = new FileReader();
@@ -132,20 +142,26 @@ export default function BackgroundColor() {
                   />
                 </div>
               ) : (
-                <div className="relative">
+                <div className="flex relative rounded-2xl items-center justify-center h-full w-full">
                   <Image
                     src={selectedImage}
                     alt="Selected image"
-                    width={400}
-                    height={300}
-                    className="w-full h-64 object-cover rounded-lg"
+                    width={375}
+                    height={375}
+                    style={{
+                      width: "min(30vh, 30vw)",
+                      height: "min(31vh, 31vw)",
+                      maxWidth: "375px",
+                      maxHeight: "375px",
+                      margin: "auto",
+                    }}
                   />
                   <button
                     onClick={() => {
                       setSelectedImage(null);
                       setProcessedImage(null);
                     }}
-                    className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                    className="absolute top-2 right-36 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
                   >
                     ×
                   </button>
@@ -202,20 +218,44 @@ export default function BackgroundColor() {
               </h2>
 
               {processedImage ? (
-                <div className="relative">
+                <div className="flex relative rounded-2xl items-center justify-center h-full w-full">
                   <Image
                     src={processedImage}
                     alt="Processed image"
-                    width={400}
-                    height={300}
-                    className="w-full h-64 object-cover rounded-lg"
+                    width={375}
+                    height={375}
+                    style={{
+                      width: "min(30vh, 30vw)",
+                      height: "min(31vh, 31vw)",
+                      maxWidth: "375px",
+                      maxHeight: "375px",
+                      margin: "auto",
+                    }}
                   />
-                  <div className="absolute top-2 left-2 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                    Background Changed
+                  <div className="absolute top-2 left-36 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                    AI Generated
                   </div>
                   <button
+                    onClick={() => setProcessedImage(null)}
+                    className="absolute top-2 right-36 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                  <button
                     onClick={handleDownload}
-                    className="absolute bottom-2 right-2 bg-blue-600 text-white px-3 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-700 transition-colors"
+                    className="absolute bottom-2 right-36 bg-blue-600 text-white px-3 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-700 transition-colors"
                   >
                     <Download className="w-4 h-4" />
                     <span className="text-sm font-medium">Download</span>

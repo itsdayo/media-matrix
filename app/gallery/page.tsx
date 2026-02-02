@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   BotMessageSquare,
-  User,
+  BringToFront,
   Wallpaper,
   ImagePlus,
   Video,
@@ -149,11 +149,11 @@ export default function Gallery() {
     router.push(`/chat?${params.toString()}`);
   };
 
-  const handleBackgroundPersonNavigation = (image: ImageResult) => {
+  const handleBackgroundForegroundNavigation = (image: ImageResult) => {
     const params = new URLSearchParams({
-      personUrl: image.url,
-      personTitle: image.title,
-      personThumbnail: image.thumbnail,
+      foregroundUrl: image.url,
+      foregroundTitle: image.title,
+      foregroundThumbnail: image.thumbnail,
     });
     router.push(`/background?${params.toString()}`);
   };
@@ -288,13 +288,15 @@ export default function Gallery() {
                       <BotMessageSquare size={16} />
                     </button>
 
-                    {/* Person Button */}
+                    {/* Foreground Button */}
                     <button
-                      onClick={() => handleBackgroundPersonNavigation(image)}
+                      onClick={() =>
+                        handleBackgroundForegroundNavigation(image)
+                      }
                       className="p-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors shadow-lg"
-                      title="Person"
+                      title="Foreground"
                     >
-                      <User size={16} />
+                      <BringToFront size={16} />
                     </button>
 
                     {/* Background Button */}

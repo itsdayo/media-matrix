@@ -7,29 +7,31 @@ import { Download } from "lucide-react";
 
 function BackgroundPage() {
   const searchParams = useSearchParams();
-  const personUrl = searchParams.get("personUrl");
+  const foregroundUrl = searchParams.get("foregroundUrl");
   const backgroundUrl = searchParams.get("backgroundUrl");
 
-  const [personImage, setPersonImage] = useState<string | null>(personUrl);
+  const [foregroundImage, setForegroundImage] = useState<string | null>(
+    foregroundUrl,
+  );
   const [backgroundImage, setBackgroundImage] = useState<string | null>(
     backgroundUrl,
   );
-  const [isDraggingPerson, setIsDraggingPerson] = useState(false);
+  const [isDraggingForeground, setIsDraggingForeground] = useState(false);
   const [isDraggingBackground, setIsDraggingBackground] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<string | null>(null);
 
-  const personFileInputRef = useRef<HTMLInputElement>(null);
+  const foregroundFileInputRef = useRef<HTMLInputElement>(null);
   const backgroundFileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragOver = (
     e: React.DragEvent,
-    type: "person" | "background",
+    type: "foreground" | "background",
   ) => {
     e.preventDefault();
-    if (type === "person") {
-      setIsDraggingPerson(true);
+    if (type === "foreground") {
+      setIsDraggingForeground(true);
     } else {
       setIsDraggingBackground(true);
     }
@@ -37,20 +39,23 @@ function BackgroundPage() {
 
   const handleDragLeave = (
     e: React.DragEvent,
-    type: "person" | "background",
+    type: "foreground" | "background",
   ) => {
     e.preventDefault();
-    if (type === "person") {
-      setIsDraggingPerson(false);
+    if (type === "foreground") {
+      setIsDraggingForeground(false);
     } else {
       setIsDraggingBackground(false);
     }
   };
 
-  const handleDrop = (e: React.DragEvent, type: "person" | "background") => {
+  const handleDrop = (
+    e: React.DragEvent,
+    type: "foreground" | "background",
+  ) => {
     e.preventDefault();
-    if (type === "person") {
-      setIsDraggingPerson(false);
+    if (type === "foreground") {
+      setIsDraggingForeground(false);
     } else {
       setIsDraggingBackground(false);
     }
@@ -61,11 +66,11 @@ function BackgroundPage() {
     }
   };
 
-  const handleImageUpload = (file: File, type: "person" | "background") => {
+  const handleImageUpload = (file: File, type: "foreground" | "background") => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      if (type === "person") {
-        setPersonImage(reader.result as string);
+      if (type === "foreground") {
+        setForegroundImage(reader.result as string);
       } else {
         setBackgroundImage(reader.result as string);
       }
@@ -75,7 +80,7 @@ function BackgroundPage() {
 
   const handleFileSelect = (
     e: React.ChangeEvent<HTMLInputElement>,
-    type: "person" | "background",
+    type: "foreground" | "background",
   ) => {
     const file = e.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
@@ -101,7 +106,7 @@ function BackgroundPage() {
   };
 
   const handleSubmit = async () => {
-    if (!personImage || !backgroundImage) return;
+    if (!foregroundImage || !backgroundImage) return;
 
     setIsLoading(true);
     setResultImage(null);
@@ -112,10 +117,10 @@ function BackgroundPage() {
       const formData = new FormData();
 
       // Convert base64 to blob and append to FormData
-      const personBlob = await fetch(personImage).then((r) => r.blob());
+      const foregroundBlob = await fetch(foregroundImage).then((r) => r.blob());
       const backgroundBlob = await fetch(backgroundImage).then((r) => r.blob());
 
-      formData.append("personImage", personBlob, "person.jpg");
+      formData.append("foregroundImage", foregroundBlob, "foreground.jpg");
       formData.append("backgroundImage", backgroundBlob, "background.jpg");
 
       // Call API endpoint instead of server action directly
@@ -148,7 +153,7 @@ function BackgroundPage() {
     }
   };
 
-  const isSubmitDisabled = !personImage || !backgroundImage || isLoading;
+  const isSubmitDisabled = !foregroundImage || !backgroundImage || isLoading;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
@@ -159,7 +164,8 @@ function BackgroundPage() {
             Background
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300">
-            Upload a person photo and a background to create your perfect scene
+            Upload a foreground image and a background to create your perfect
+            scene
           </p>
         </div>
 
@@ -167,17 +173,17 @@ function BackgroundPage() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
           {/* Image Upload Areas */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            {/* Person Image */}
+            {/* Foreground Image */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">
-                Person Photo
+                Foreground
               </h3>
               <div className="flex justify-center">
                 <button
                   className={`relative border-3 border-dashed rounded-2xl transition-all duration-200 cursor-pointer ${
-                    isDraggingPerson
+                    isDraggingForeground
                       ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                      : personImage
+                      : foregroundImage
                         ? "border-green-500 bg-green-50 dark:bg-green-900/20"
                         : "border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 hover:border-gray-400 dark:hover:border-gray-500"
                   }`}
@@ -187,32 +193,39 @@ function BackgroundPage() {
                     maxWidth: "300px",
                     maxHeight: "300px",
                   }}
-                  onDragOver={(e) => handleDragOver(e, "person")}
-                  onDragLeave={(e) => handleDragLeave(e, "person")}
-                  onDrop={(e) => handleDrop(e, "person")}
-                  onClick={() => personFileInputRef.current?.click()}
+                  onDragOver={(e) => handleDragOver(e, "foreground")}
+                  onDragLeave={(e) => handleDragLeave(e, "foreground")}
+                  onDrop={(e) => handleDrop(e, "foreground")}
+                  onClick={() => foregroundFileInputRef.current?.click()}
                 >
                   <input
                     type="file"
-                    ref={personFileInputRef}
-                    onChange={(e) => handleFileSelect(e, "person")}
+                    ref={foregroundFileInputRef}
+                    onChange={(e) => handleFileSelect(e, "foreground")}
                     accept="image/*"
                     className="hidden"
                   />
 
-                  {personImage ? (
-                    <div className="w-full h-full relative rounded-2xl overflow-hidden">
+                  {foregroundImage ? (
+                    <div className="flex relative rounded-2xl items-center justify-center h-full w-full">
                       <Image
                         preload={true}
-                        src={personImage}
-                        alt="Person image"
-                        fill
-                        className="object-cover"
+                        src={foregroundImage}
+                        alt="Foreground image"
+                        width={375}
+                        height={375}
+                        style={{
+                          width: "min(27vh, 27vw)",
+                          height: "min(27vh, 27vw)",
+                          maxWidth: "375px",
+                          maxHeight: "375px",
+                          margin: "auto",
+                        }}
                       />
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setPersonImage(null);
+                          setForegroundImage(null);
                         }}
                         className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
                       >
@@ -235,7 +248,7 @@ function BackgroundPage() {
                     <div className="w-full h-full flex flex-col items-center justify-center p-6">
                       <svg
                         className={`w-12 h-12 mb-4 transition-colors ${
-                          isDraggingPerson
+                          isDraggingForeground
                             ? "text-blue-500"
                             : "text-gray-400 dark:text-gray-500"
                         }`}
@@ -252,14 +265,14 @@ function BackgroundPage() {
                       </svg>
                       <p
                         className={`text-center font-medium transition-colors ${
-                          isDraggingPerson
+                          isDraggingForeground
                             ? "text-blue-600 dark:text-blue-400"
                             : "text-gray-600 dark:text-gray-400"
                         }`}
                       >
-                        {isDraggingPerson
+                        {isDraggingForeground
                           ? "Drop image here"
-                          : "Drop person photo"}
+                          : "Drop foreground image"}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
                         or click to browse
@@ -285,16 +298,16 @@ function BackgroundPage() {
                         ? "border-green-500 bg-green-50 dark:bg-green-900/20"
                         : "border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 hover:border-gray-400 dark:hover:border-gray-500"
                   }`}
+                  onDragOver={(e) => handleDragOver(e, "background")}
+                  onDragLeave={(e) => handleDragLeave(e, "background")}
+                  onDrop={(e) => handleDrop(e, "background")}
+                  onClick={() => backgroundFileInputRef.current?.click()}
                   style={{
                     width: "min(30vh, 30vw)",
                     height: "min(30vh, 30vw)",
                     maxWidth: "300px",
                     maxHeight: "300px",
                   }}
-                  onDragOver={(e) => handleDragOver(e, "background")}
-                  onDragLeave={(e) => handleDragLeave(e, "background")}
-                  onDrop={(e) => handleDrop(e, "background")}
-                  onClick={() => backgroundFileInputRef.current?.click()}
                 >
                   <input
                     type="file"
@@ -305,13 +318,20 @@ function BackgroundPage() {
                   />
 
                   {backgroundImage ? (
-                    <div className="w-full h-full relative rounded-2xl overflow-hidden">
+                    <div className="flex relative rounded-2xl items-center justify-center h-full w-full">
                       <Image
                         preload={true}
                         src={backgroundImage}
                         alt="Background image"
-                        fill
-                        className="object-cover"
+                        width={375}
+                        height={375}
+                        style={{
+                          width: "min(27vh, 27vw)",
+                          height: "min(27vh, 27vw)",
+                          maxWidth: "365px",
+                          maxHeight: "365px",
+                          margin: "auto",
+                        }}
                       />
                       <button
                         onClick={(e) => {
@@ -507,7 +527,7 @@ function BackgroundPage() {
               How it works:
             </h3>
             <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-              <li>1. Upload a photo of a person on the left</li>
+              <li>1. Upload a foreground on the left</li>
               <li>2. Upload a background on the right</li>
               <li>
                 3. Click &quot;Blend Images&quot; to create your perfect scene
