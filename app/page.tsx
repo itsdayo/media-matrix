@@ -23,7 +23,7 @@ const features = [
     id: "setting-manipulation",
     icon: Wallpaper,
     url: "/background",
-    title: "Setting manipulation",
+    title: "Setting Manipulation",
     description:
       "Upload your own image along with the setting image you want to apply",
     color: "white",
@@ -216,6 +216,9 @@ export default function Home() {
       >
         <div className="max-w-7xl mx-auto">
           <h3 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
+           {selectedFeature.title}
+          </h3>
+          <h3 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-12">
             How It Works
           </h3>
           <div className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">

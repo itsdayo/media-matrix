@@ -44,6 +44,9 @@ export default function Gallery() {
     const savedDebouncedQuery = sessionStorage.getItem(
       "gallery_debounced_query",
     );
+    const savedCurrentPage = sessionStorage.getItem("gallery_current_page");
+    const savedTotalPages = sessionStorage.getItem("gallery_total_pages");
+    const savedTotalResults = sessionStorage.getItem("gallery_total_results");
 
     if (savedQuery) {
       setQuery(savedQuery);
@@ -57,6 +60,18 @@ export default function Gallery() {
       } catch (err) {
         console.error("Failed to parse saved images:", err);
       }
+    }
+
+    if (savedCurrentPage) {
+      setCurrentPage(parseInt(savedCurrentPage, 10));
+    }
+
+    if (savedTotalPages) {
+      setTotalPages(parseInt(savedTotalPages, 10));
+    }
+
+    if (savedTotalResults) {
+      setTotalResults(parseInt(savedTotalResults, 10));
     }
   }, []);
 
@@ -78,6 +93,18 @@ export default function Gallery() {
       sessionStorage.setItem("gallery_search_images", JSON.stringify(images));
     }
   }, [images]);
+
+  useEffect(() => {
+    sessionStorage.setItem("gallery_current_page", currentPage.toString());
+  }, [currentPage]);
+
+  useEffect(() => {
+    sessionStorage.setItem("gallery_total_pages", totalPages.toString());
+  }, [totalPages]);
+
+  useEffect(() => {
+    sessionStorage.setItem("gallery_total_results", totalResults.toString());
+  }, [totalResults]);
 
   // Debounced search function
   const performSearch = async (searchQuery: string, page: number = 1) => {
@@ -213,7 +240,7 @@ export default function Gallery() {
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-8">
-            Image Gallery
+            Photo Gallery
           </h2>
 
           <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-8">
