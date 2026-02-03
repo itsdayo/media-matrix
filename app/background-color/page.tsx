@@ -1,12 +1,22 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import { Upload, Download, Palette } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
+import {
+  Upload,
+  Download,
+  Palette,
+  BotMessageSquare,
+  BringToFront,
+  Wallpaper,
+  ImagePlus,
+  Video,
+} from "lucide-react";
 import Image from "next/image";
 
 export default function BackgroundColor() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [backgroundColor, setBackgroundColor] = useState("#ffffff");
   const [processedImage, setProcessedImage] = useState<string | null>(null);
@@ -14,22 +24,91 @@ export default function BackgroundColor() {
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Load persisted data on component mount
+  useEffect(() => {
+    const persistedSelectedImage = sessionStorage.getItem(
+      "bg-color-selected-image",
+    );
+    const persistedBackgroundColor = sessionStorage.getItem(
+      "bg-color-background-color",
+    );
+    const persistedProcessedImage = sessionStorage.getItem(
+      "bg-color-processed-image",
+    );
+
+    if (persistedSelectedImage) {
+      setSelectedImage(persistedSelectedImage);
+    }
+    if (persistedBackgroundColor) {
+      setBackgroundColor(persistedBackgroundColor);
+    }
+    if (persistedProcessedImage) {
+      setProcessedImage(persistedProcessedImage);
+    }
+  }, []);
+
+  // Helper functions to persist state
+  const persistSelectedImage = (imageUrl: string | null) => {
+    // Remove old data first
+    sessionStorage.removeItem("bg-color-selected-image");
+
+    if (imageUrl) {
+      sessionStorage.setItem("bg-color-selected-image", imageUrl);
+      setSelectedImage(imageUrl);
+    } else {
+      setSelectedImage(null);
+    }
+  };
+
+  const persistBackgroundColor = (color: string) => {
+    // Remove old data first
+    sessionStorage.removeItem("bg-color-background-color");
+
+    sessionStorage.setItem("bg-color-background-color", color);
+    setBackgroundColor(color);
+  };
+
+  const persistProcessedImage = (imageUrl: string | null) => {
+    // Remove old data first
+    sessionStorage.removeItem("bg-color-processed-image");
+
+    if (imageUrl) {
+      sessionStorage.setItem("bg-color-processed-image", imageUrl);
+      setProcessedImage(imageUrl);
+    } else {
+      setProcessedImage(null);
+    }
+  };
+
   // Handle URL parameters from gallery navigation
   useEffect(() => {
     const imageUrl = searchParams.get("imageUrl");
-    if (imageUrl) {
-      setSelectedImage(imageUrl);
+    const imageId = searchParams.get("imageId");
+
+    if (imageId && !selectedImage) {
+      // Get image from sessionStorage using ID
+      const image = sessionStorage.getItem(imageId);
+      if (image) {
+        persistSelectedImage(image);
+      }
+    } else if (imageUrl && !selectedImage) {
+      // Fallback to direct URL (for backward compatibility)
+      persistSelectedImage(imageUrl);
     }
-  }, [searchParams]);
+  }, [searchParams, selectedImage]);
 
   const handleImageUpload = (file: File) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      setSelectedImage(reader.result as string);
-      setProcessedImage(null);
+      persistSelectedImage(reader.result as string);
+      persistProcessedImage(null);
       setError(null);
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    persistBackgroundColor(e.target.value);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,7 +155,7 @@ export default function BackgroundColor() {
       }
 
       const data = await response.json();
-      setProcessedImage(data.imageUrl);
+      persistProcessedImage(data.imageUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -93,6 +172,30 @@ export default function BackgroundColor() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  // Navigation handlers
+  const handleChatNavigation = (imageUrl: string) => {
+    // Store the image with a unique ID and pass the ID in URL
+    const imageId = `nav-chat-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    sessionStorage.setItem(imageId, imageUrl);
+
+    const params = new URLSearchParams({
+      imageId: imageId,
+    });
+    router.push(`/chat?${params.toString()}`);
+  };
+
+  const handleImageToVideoNavigation = (imageUrl: string) => {
+    // Store the image with a unique ID and pass the ID in URL
+    const imageId = `nav-video-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    sessionStorage.setItem(imageId, imageUrl);
+
+    const params = new URLSearchParams({
+      imageId: imageId,
+      title: "AI Generated Image",
+    });
+    router.push(`/image-to-video?${params.toString()}`);
   };
 
   return (
@@ -181,7 +284,7 @@ export default function BackgroundColor() {
                   <input
                     type="color"
                     value={backgroundColor}
-                    onChange={(e) => setBackgroundColor(e.target.value)}
+                    onChange={(e) => persistBackgroundColor(e.target.value)}
                     className="w-20 h-20 rounded cursor-pointer"
                   />
                   <div className="flex-1">
@@ -191,7 +294,7 @@ export default function BackgroundColor() {
                     <input
                       type="text"
                       value={backgroundColor}
-                      onChange={(e) => setBackgroundColor(e.target.value)}
+                      onChange={(e) => persistBackgroundColor(e.target.value)}
                       placeholder="#ffffff"
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                     />
@@ -236,7 +339,7 @@ export default function BackgroundColor() {
                     AI Generated
                   </div>
                   <button
-                    onClick={() => setProcessedImage(null)}
+                    onClick={() => persistProcessedImage(null)}
                     className="absolute top-2 right-36 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
                   >
                     <svg
@@ -255,11 +358,34 @@ export default function BackgroundColor() {
                   </button>
                   <button
                     onClick={handleDownload}
-                    className="absolute bottom-2 right-36 bg-blue-600 text-white px-3 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-700 transition-colors"
+                    className="absolute bottom-2 right-36 bg-blue-600 text-white px-3 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-700 transition-colors shadow-lg"
                   >
                     <Download className="w-4 h-4" />
                     <span className="text-sm font-medium">Download</span>
                   </button>
+
+                  {/* Action Buttons */}
+                  <div className="absolute bottom-2 left-36 flex gap-0.5 transition-opacity duration-200 bg-black/20 backdrop-blur-sm rounded-full p-0.5">
+                    {/* ChatBot Button */}
+                    <button
+                      onClick={() => handleChatNavigation(processedImage)}
+                      className="p-1 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg"
+                      title="ChatBot"
+                    >
+                      <BotMessageSquare size={12} />
+                    </button>
+
+                    {/* Video Button */}
+                    <button
+                      onClick={() =>
+                        handleImageToVideoNavigation(processedImage)
+                      }
+                      className="p-1 bg-orange-600 text-white rounded-full hover:bg-orange-700 transition-colors shadow-lg"
+                      title="Generate Video"
+                    >
+                      <Video size={12} />
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center p-6">

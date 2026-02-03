@@ -16,8 +16,9 @@ function ChatPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const imageUrl = searchParams.get("imageUrl");
+  const imageId = searchParams.get("imageId");
   const [inputText, setInputText] = useState("");
-  const [selectedImage, setSelectedImage] = useState<string | null>(imageUrl);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,45 +27,105 @@ function ChatPage() {
 
   // Load persisted data on component mount
   useEffect(() => {
-    const persistedInputText = localStorage.getItem("chat-input-text");
-    const persistedGeneratedImage = localStorage.getItem(
-      "chat-generated-image",
+    const persistedInputText = sessionStorage.getItem("chat-input-text");
+    const persistedGeneratedId = sessionStorage.getItem(
+      "chat-current-generated-id",
     );
-    const persistedSelectedImage = localStorage.getItem("chat-selected-image");
+    const persistedSelectedId = sessionStorage.getItem(
+      "chat-current-selected-id",
+    );
 
     if (persistedInputText) {
       setInputText(persistedInputText);
     }
-    if (persistedGeneratedImage) {
-      setGeneratedImage(persistedGeneratedImage);
+
+    // Handle imageId from navigation
+    if (imageId && !selectedImage) {
+      const image = sessionStorage.getItem(imageId);
+      if (image) {
+        persistSelectedImage(image);
+      }
+    } else if (imageUrl && !selectedImage) {
+      // Fallback to direct URL (for backward compatibility)
+      persistSelectedImage(imageUrl);
     }
-    if (persistedSelectedImage) {
-      setSelectedImage(persistedSelectedImage);
+
+    if (persistedGeneratedId) {
+      const generatedImage = getGeneratedImageById(persistedGeneratedId);
+      if (generatedImage) {
+        setGeneratedImage(generatedImage);
+      }
     }
-  }, []);
+    if (persistedSelectedId && !imageId && !imageUrl) {
+      const selectedImage = getSelectedImageById(persistedSelectedId);
+      if (selectedImage) {
+        setSelectedImage(selectedImage);
+      }
+    }
+  }, [imageId, imageUrl, selectedImage]);
 
   // Helper functions to persist state
   const persistInputText = (text: string) => {
-    localStorage.setItem("chat-input-text", text);
+    // Remove old data first
+    sessionStorage.removeItem("chat-input-text");
+    sessionStorage.setItem("chat-input-text", text);
     setInputText(text);
   };
 
   const persistGeneratedImage = (imageUrl: string | null) => {
-    if (imageUrl) {
-      localStorage.setItem("chat-generated-image", imageUrl);
-    } else {
-      localStorage.removeItem("chat-generated-image");
+    // Remove old data first
+    const currentId = sessionStorage.getItem("chat-current-generated-id");
+    if (currentId) {
+      sessionStorage.removeItem(`chat-generated-image-${currentId}`);
+      sessionStorage.removeItem("chat-current-generated-id");
     }
-    setGeneratedImage(imageUrl);
+
+    if (imageUrl) {
+      // Generate a unique ID for this image
+      const imageId = `generated-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      sessionStorage.setItem(`chat-generated-image-${imageId}`, imageUrl);
+      sessionStorage.setItem("chat-current-generated-id", imageId);
+      setGeneratedImage(imageUrl);
+    } else {
+      setGeneratedImage(null);
+    }
   };
 
   const persistSelectedImage = (imageUrl: string | null) => {
-    if (imageUrl) {
-      localStorage.setItem("chat-selected-image", imageUrl);
-    } else {
-      localStorage.removeItem("chat-selected-image");
+    // Remove old data first
+    const currentId = sessionStorage.getItem("chat-current-selected-id");
+    if (currentId) {
+      sessionStorage.removeItem(`chat-selected-image-${currentId}`);
+      sessionStorage.removeItem("chat-current-selected-id");
     }
-    setSelectedImage(imageUrl);
+
+    if (imageUrl) {
+      // Generate a unique ID for this image
+      const imageId = `selected-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      sessionStorage.setItem(`chat-selected-image-${imageId}`, imageUrl);
+      sessionStorage.setItem("chat-current-selected-id", imageId);
+      setSelectedImage(imageUrl);
+    } else {
+      setSelectedImage(null);
+    }
+  };
+
+  // Helper function to get image by ID
+  const getImageById = (imageId: string | null) => {
+    if (!imageId) return null;
+    return sessionStorage.getItem(imageId);
+  };
+
+  // Helper function to get selected image by ID (with proper key prefix)
+  const getSelectedImageById = (imageId: string | null) => {
+    if (!imageId) return null;
+    return sessionStorage.getItem(`chat-selected-image-${imageId}`);
+  };
+
+  // Helper function to get generated image by ID (with proper key prefix)
+  const getGeneratedImageById = (imageId: string | null) => {
+    if (!imageId) return null;
+    return sessionStorage.getItem(`chat-generated-image-${imageId}`);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -90,7 +151,7 @@ function ChatPage() {
   const handleImageUpload = (file: File) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      persistGeneratedImage(reader.result as string);
+      persistSelectedImage(reader.result as string);
     };
     reader.readAsDataURL(file);
   };
@@ -172,37 +233,49 @@ function ChatPage() {
   };
 
   const handleBackgroundForegroundNavigation = (imageUrl: string) => {
+    // Store the image with a unique ID and pass the ID in URL
+    const imageId = `nav-foreground-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    sessionStorage.setItem(imageId, imageUrl);
+
     const params = new URLSearchParams({
-      foregroundUrl: imageUrl,
+      imageId: imageId,
       foregroundTitle: "AI Generated Image",
-      foregroundThumbnail: imageUrl,
     });
     router.push(`/background?${params.toString()}`);
   };
 
   const handleBackgroundSettingNavigation = (imageUrl: string) => {
+    // Store the image with a unique ID and pass the ID in URL
+    const imageId = `nav-background-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    sessionStorage.setItem(imageId, imageUrl);
+
     const params = new URLSearchParams({
-      backgroundUrl: imageUrl,
+      imageId: imageId,
       backgroundTitle: "AI Generated Image",
-      backgroundThumbnail: imageUrl,
     });
     router.push(`/background?${params.toString()}`);
   };
 
   const handleBackgroundColorNavigation = (imageUrl: string) => {
+    // Store the image with a unique ID and pass the ID in URL
+    const imageId = `nav-bg-color-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    sessionStorage.setItem(imageId, imageUrl);
+
     const params = new URLSearchParams({
-      imageUrl: imageUrl,
-      imageTitle: "AI Generated Image",
-      imageThumbnail: imageUrl,
+      imageId: imageId,
+      title: "AI Generated Image",
     });
     router.push(`/background-color?${params.toString()}`);
   };
 
   const handleImageToVideoNavigation = (imageUrl: string) => {
+    // Store the image with a unique ID and pass the ID in URL
+    const imageId = `nav-video-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    sessionStorage.setItem(imageId, imageUrl);
+
     const params = new URLSearchParams({
-      imageUrl: imageUrl,
-      imageTitle: "AI Generated Image",
-      imageThumbnail: imageUrl,
+      imageId: imageId,
+      title: "AI Generated Image",
     });
     router.push(`/image-to-video?${params.toString()}`);
   };
@@ -271,7 +344,7 @@ function ChatPage() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSelectedImage(null);
+                      persistSelectedImage(null);
                     }}
                     className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
                   >

@@ -16,13 +16,113 @@ function ImageToVideoPage() {
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Handle URL parameters for preloaded image
+  // Load persisted data on component mount
   useEffect(() => {
-    const imageUrl = searchParams.get("imageUrl");
-    if (imageUrl) {
-      setSelectedImage(imageUrl);
+    const persistedInputText = sessionStorage.getItem("video-input-text");
+    const persistedSelectedId = sessionStorage.getItem(
+      "video-current-selected-id",
+    );
+    const persistedGeneratedId = sessionStorage.getItem(
+      "video-current-generated-id",
+    );
+
+    if (persistedInputText) {
+      setInputText(persistedInputText);
     }
-  }, [searchParams]);
+
+    // Handle imageId from navigation
+    const imageUrl = searchParams.get("imageUrl");
+    const imageId = searchParams.get("imageId");
+
+    if (imageId && !selectedImage) {
+      const image = sessionStorage.getItem(imageId);
+      if (image) {
+        persistSelectedImage(image);
+      }
+    } else if (imageUrl && !selectedImage) {
+      // Fallback to direct URL (for backward compatibility)
+      persistSelectedImage(imageUrl);
+    }
+
+    if (persistedSelectedId && !imageId && !imageUrl) {
+      const selectedImage = getSelectedImageById(persistedSelectedId);
+      if (selectedImage) {
+        setSelectedImage(selectedImage);
+      }
+    }
+
+    if (persistedGeneratedId) {
+      const generatedVideo = getGeneratedVideoById(persistedGeneratedId);
+      if (generatedVideo) {
+        setGeneratedVideo(generatedVideo);
+      }
+    }
+  }, [searchParams, selectedImage]);
+
+  // Helper functions to persist state
+  const persistInputText = (text: string) => {
+    // Remove old data first
+    sessionStorage.removeItem("video-input-text");
+
+    sessionStorage.setItem("video-input-text", text);
+    setInputText(text);
+  };
+
+  const persistSelectedImage = (imageUrl: string | null) => {
+    // Remove old data first
+    const currentId = sessionStorage.getItem("video-current-selected-id");
+    if (currentId) {
+      sessionStorage.removeItem(`video-selected-image-${currentId}`);
+      sessionStorage.removeItem("video-current-selected-id");
+    }
+
+    if (imageUrl) {
+      // Generate a unique ID for this image
+      const imageId = `selected-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      sessionStorage.setItem(`video-selected-image-${imageId}`, imageUrl);
+      sessionStorage.setItem("video-current-selected-id", imageId);
+      setSelectedImage(imageUrl);
+    } else {
+      setSelectedImage(null);
+    }
+  };
+
+  const persistGeneratedVideo = (videoUrl: string | null) => {
+    // Remove old data first
+    const currentId = sessionStorage.getItem("video-current-generated-id");
+    if (currentId) {
+      sessionStorage.removeItem(`video-generated-video-${currentId}`);
+      sessionStorage.removeItem("video-current-generated-id");
+    }
+
+    if (videoUrl) {
+      // Generate a unique ID for this video
+      const videoId = `generated-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      sessionStorage.setItem(`video-generated-video-${videoId}`, videoUrl);
+      sessionStorage.setItem("video-current-generated-id", videoId);
+      setGeneratedVideo(videoUrl);
+    } else {
+      setGeneratedVideo(null);
+    }
+  };
+
+  // Helper function to get image by ID
+  const getImageById = (imageId: string | null) => {
+    if (!imageId) return null;
+    return sessionStorage.getItem(imageId);
+  };
+
+  // Helper function to get selected image by ID (with proper key prefix)
+  const getSelectedImageById = (imageId: string | null) => {
+    if (!imageId) return null;
+    return sessionStorage.getItem(`video-selected-image-${imageId}`);
+  };
+
+  // Helper function to get generated video by ID (with proper key prefix)
+  const getGeneratedVideoById = (videoId: string | null) => {
+    if (!videoId) return null;
+    return sessionStorage.getItem(`video-generated-video-${videoId}`);
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -47,7 +147,7 @@ function ImageToVideoPage() {
   const handleImageUpload = (file: File) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      setSelectedImage(reader.result as string);
+      persistSelectedImage(reader.result as string);
     };
     reader.readAsDataURL(file);
   };
@@ -102,7 +202,7 @@ function ImageToVideoPage() {
       if (apiResponse.ok) {
         const result = await apiResponse.json();
         if (result.success && result.videoUrl) {
-          setGeneratedVideo(result.videoUrl);
+          persistGeneratedVideo(result.videoUrl);
         } else {
           setError("Generation failed. Please try again in a moment.");
           console.error("Failed to generate video:", result.error);
@@ -187,7 +287,7 @@ function ImageToVideoPage() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSelectedImage(null);
+                      persistSelectedImage(null);
                     }}
                     className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
                   >
@@ -271,7 +371,7 @@ function ImageToVideoPage() {
                     <span>AI Generated</span>
                   </div>
                   <button
-                    onClick={() => setGeneratedVideo(null)}
+                    onClick={() => persistGeneratedVideo(null)}
                     className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors shadow-lg"
                   >
                     <svg
@@ -323,7 +423,7 @@ function ImageToVideoPage() {
             <textarea
               id="prompt"
               value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
+              onChange={(e) => persistInputText(e.target.value)}
               placeholder="Make this foreground subject walk slowly towards the camera with a gentle smile..."
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700"
               rows={4}

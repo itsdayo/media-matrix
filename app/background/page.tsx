@@ -1,14 +1,25 @@
 "use client";
 
-import { useState, useRef, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useRef, Suspense, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import { Download } from "lucide-react";
+import {
+  Download,
+  BotMessageSquare,
+  BringToFront,
+  Wallpaper,
+  ImagePlus,
+  Video,
+} from "lucide-react";
 
 function BackgroundPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const foregroundUrl = searchParams.get("foregroundUrl");
   const backgroundUrl = searchParams.get("backgroundUrl");
+  const imageId = searchParams.get("imageId");
+  const foregroundTitle = searchParams.get("foregroundTitle");
+  const backgroundTitle = searchParams.get("backgroundTitle");
 
   const [foregroundImage, setForegroundImage] = useState<string | null>(
     foregroundUrl,
@@ -24,6 +35,85 @@ function BackgroundPage() {
 
   const foregroundFileInputRef = useRef<HTMLInputElement>(null);
   const backgroundFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load persisted data on component mount
+  useEffect(() => {
+    const persistedForegroundImage = sessionStorage.getItem(
+      "bg-foreground-image",
+    );
+    const persistedBackgroundImage = sessionStorage.getItem(
+      "bg-background-image",
+    );
+    const persistedResultImage = sessionStorage.getItem("bg-result-image");
+
+    // Handle imageId from navigation with title-based distinction
+    if (imageId && !foregroundUrl && !backgroundUrl) {
+      const image = sessionStorage.getItem(imageId);
+      if (image) {
+        // Use title parameter to determine if this is foreground or background
+        if (foregroundTitle) {
+          persistForegroundImage(image);
+        } else if (backgroundTitle) {
+          persistBackgroundImage(image);
+        } else {
+          // Default to foreground if no title specified
+          persistForegroundImage(image);
+        }
+      }
+    }
+
+    // Load persisted foreground image if not set by URL parameters
+    if (persistedForegroundImage && !foregroundUrl) {
+      setForegroundImage(persistedForegroundImage);
+    }
+
+    // Load persisted background image if not set by URL parameters
+    if (persistedBackgroundImage && !backgroundUrl) {
+      setBackgroundImage(persistedBackgroundImage);
+    }
+
+    // Always load result image
+    if (persistedResultImage) {
+      setResultImage(persistedResultImage);
+    }
+  }, [foregroundUrl, backgroundUrl, imageId, foregroundTitle, backgroundTitle]);
+
+  // Helper functions to persist state
+  const persistForegroundImage = (imageUrl: string | null) => {
+    // Remove old data first
+    sessionStorage.removeItem("bg-foreground-image");
+
+    if (imageUrl) {
+      sessionStorage.setItem("bg-foreground-image", imageUrl);
+      setForegroundImage(imageUrl);
+    } else {
+      setForegroundImage(null);
+    }
+  };
+
+  const persistBackgroundImage = (imageUrl: string | null) => {
+    // Remove old data first
+    sessionStorage.removeItem("bg-background-image");
+
+    if (imageUrl) {
+      sessionStorage.setItem("bg-background-image", imageUrl);
+      setBackgroundImage(imageUrl);
+    } else {
+      setBackgroundImage(null);
+    }
+  };
+
+  const persistResultImage = (imageUrl: string | null) => {
+    // Remove old data first
+    sessionStorage.removeItem("bg-result-image");
+
+    if (imageUrl) {
+      sessionStorage.setItem("bg-result-image", imageUrl);
+      setResultImage(imageUrl);
+    } else {
+      setResultImage(null);
+    }
+  };
 
   const handleDragOver = (
     e: React.DragEvent,
@@ -70,9 +160,9 @@ function BackgroundPage() {
     const reader = new FileReader();
     reader.onloadend = () => {
       if (type === "foreground") {
-        setForegroundImage(reader.result as string);
+        persistForegroundImage(reader.result as string);
       } else {
-        setBackgroundImage(reader.result as string);
+        persistBackgroundImage(reader.result as string);
       }
     };
     reader.readAsDataURL(file);
@@ -109,7 +199,7 @@ function BackgroundPage() {
     if (!foregroundImage || !backgroundImage) return;
 
     setIsLoading(true);
-    setResultImage(null);
+    persistResultImage(null);
     setError(null);
 
     try {
@@ -139,7 +229,7 @@ function BackgroundPage() {
       if (result.success) {
         // Optionally set result image if the API returns it
         if (result.imageUrl) {
-          setResultImage(result.imageUrl);
+          persistResultImage(result.imageUrl);
         }
       } else {
         setError("Generation failed. Please try again in a moment.");
@@ -154,6 +244,30 @@ function BackgroundPage() {
   };
 
   const isSubmitDisabled = !foregroundImage || !backgroundImage || isLoading;
+
+  // Navigation handlers
+  const handleChatNavigation = (imageUrl: string) => {
+    // Store the image with a unique ID and pass the ID in URL
+    const imageId = `nav-chat-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    sessionStorage.setItem(imageId, imageUrl);
+
+    const params = new URLSearchParams({
+      imageId: imageId,
+    });
+    router.push(`/chat?${params.toString()}`);
+  };
+
+  const handleImageToVideoNavigation = (imageUrl: string) => {
+    // Store the image with a unique ID and pass the ID in URL
+    const imageId = `nav-video-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    sessionStorage.setItem(imageId, imageUrl);
+
+    const params = new URLSearchParams({
+      imageId: imageId,
+      title: "AI Generated Image",
+    });
+    router.push(`/image-to-video?${params.toString()}`);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
@@ -225,6 +339,7 @@ function BackgroundPage() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          persistForegroundImage(null);
                           setForegroundImage(null);
                         }}
                         className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
@@ -336,6 +451,7 @@ function BackgroundPage() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          persistBackgroundImage(null);
                           setBackgroundImage(null);
                         }}
                         className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
@@ -437,7 +553,7 @@ function BackgroundPage() {
                     AI Generated
                   </div>
                   <button
-                    onClick={() => setResultImage(null)}
+                    onClick={() => persistResultImage(null)}
                     className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
                   >
                     <svg
@@ -463,6 +579,27 @@ function BackgroundPage() {
                     <Download className="w-4 h-4" />
                     <span className="text-sm font-medium">Download</span>
                   </button>
+
+                  {/* Action Buttons */}
+                  <div className="absolute bottom-2 left-2 flex gap-0.5 transition-opacity duration-200 bg-black/20 backdrop-blur-sm rounded-full p-0.5">
+                    {/* ChatBot Button */}
+                    <button
+                      onClick={() => handleChatNavigation(resultImage)}
+                      className="p-1 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg"
+                      title="ChatBot"
+                    >
+                      <BotMessageSquare size={12} />
+                    </button>
+
+                    {/* Video Button */}
+                    <button
+                      onClick={() => handleImageToVideoNavigation(resultImage)}
+                      className="p-1 bg-orange-600 text-white rounded-full hover:bg-orange-700 transition-colors shadow-lg"
+                      title="Generate Video"
+                    >
+                      <Video size={12} />
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center p-6">

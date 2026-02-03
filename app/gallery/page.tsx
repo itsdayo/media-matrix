@@ -166,10 +166,20 @@ export default function Gallery() {
     setTotalResults(0);
   };
 
-  // Handle navigation with image data via URL parameters
+  // Handle navigation with image data via sessionStorage and URL parameters
   const handleChatNavigation = (image: ImageResult) => {
+    // Clear old gallery chat data first
+    const oldChatKeys = Object.keys(sessionStorage).filter((key) =>
+      key.startsWith("gallery-chat-"),
+    );
+    oldChatKeys.forEach((key) => sessionStorage.removeItem(key));
+
+    // Store the image with a unique ID and pass the ID in URL
+    const imageId = `gallery-chat-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    sessionStorage.setItem(imageId, image.url);
+
     const params = new URLSearchParams({
-      imageUrl: image.url,
+      imageId: imageId,
       imageTitle: image.title,
       imageThumbnail: image.thumbnail,
     });
@@ -177,8 +187,18 @@ export default function Gallery() {
   };
 
   const handleBackgroundForegroundNavigation = (image: ImageResult) => {
+    // Clear old gallery foreground data first
+    const oldForegroundKeys = Object.keys(sessionStorage).filter((key) =>
+      key.startsWith("gallery-foreground-"),
+    );
+    oldForegroundKeys.forEach((key) => sessionStorage.removeItem(key));
+
+    // Store the image with a unique ID and pass the ID in URL
+    const imageId = `gallery-foreground-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    sessionStorage.setItem(imageId, image.url);
+
     const params = new URLSearchParams({
-      foregroundUrl: image.url,
+      imageId: imageId,
       foregroundTitle: image.title,
       foregroundThumbnail: image.thumbnail,
     });
@@ -186,8 +206,18 @@ export default function Gallery() {
   };
 
   const handleBackgroundSettingNavigation = (image: ImageResult) => {
+    // Clear old gallery background data first
+    const oldBackgroundKeys = Object.keys(sessionStorage).filter((key) =>
+      key.startsWith("gallery-background-"),
+    );
+    oldBackgroundKeys.forEach((key) => sessionStorage.removeItem(key));
+
+    // Store the image with a unique ID and pass the ID in URL
+    const imageId = `gallery-background-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    sessionStorage.setItem(imageId, image.url);
+
     const params = new URLSearchParams({
-      backgroundUrl: image.url,
+      imageId: imageId,
       backgroundTitle: image.title,
       backgroundThumbnail: image.thumbnail,
     });
@@ -195,8 +225,18 @@ export default function Gallery() {
   };
 
   const handleBackgroundColorNavigation = (image: ImageResult) => {
+    // Clear old gallery bg-color data first
+    const oldBgColorKeys = Object.keys(sessionStorage).filter((key) =>
+      key.startsWith("gallery-bg-color-"),
+    );
+    oldBgColorKeys.forEach((key) => sessionStorage.removeItem(key));
+
+    // Store the image with a unique ID and pass the ID in URL
+    const imageId = `gallery-bg-color-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    sessionStorage.setItem(imageId, image.url);
+
     const params = new URLSearchParams({
-      imageUrl: image.url,
+      imageId: imageId,
       imageTitle: image.title,
       imageThumbnail: image.thumbnail,
     });
@@ -204,8 +244,18 @@ export default function Gallery() {
   };
 
   const handleImageToVideoNavigation = (image: ImageResult) => {
+    // Clear old gallery video data first
+    const oldVideoKeys = Object.keys(sessionStorage).filter((key) =>
+      key.startsWith("gallery-video-"),
+    );
+    oldVideoKeys.forEach((key) => sessionStorage.removeItem(key));
+
+    // Store the image with a unique ID and pass the ID in URL
+    const imageId = `gallery-video-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    sessionStorage.setItem(imageId, image.url);
+
     const params = new URLSearchParams({
-      imageUrl: image.url,
+      imageId: imageId,
       imageTitle: image.title,
       imageThumbnail: image.thumbnail,
     });
