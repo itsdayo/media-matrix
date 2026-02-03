@@ -1,12 +1,20 @@
 "use client";
 
-import { useState, useRef, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useRef, Suspense, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import { Download } from "lucide-react";
+import {
+  Download,
+  BotMessageSquare,
+  BringToFront,
+  Wallpaper,
+  ImagePlus,
+  Video,
+} from "lucide-react";
 
 function ChatPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const imageUrl = searchParams.get("imageUrl");
   const [inputText, setInputText] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(imageUrl);
@@ -15,6 +23,49 @@ function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load persisted data on component mount
+  useEffect(() => {
+    const persistedInputText = localStorage.getItem("chat-input-text");
+    const persistedGeneratedImage = localStorage.getItem(
+      "chat-generated-image",
+    );
+    const persistedSelectedImage = localStorage.getItem("chat-selected-image");
+
+    if (persistedInputText) {
+      setInputText(persistedInputText);
+    }
+    if (persistedGeneratedImage) {
+      setGeneratedImage(persistedGeneratedImage);
+    }
+    if (persistedSelectedImage) {
+      setSelectedImage(persistedSelectedImage);
+    }
+  }, []);
+
+  // Helper functions to persist state
+  const persistInputText = (text: string) => {
+    localStorage.setItem("chat-input-text", text);
+    setInputText(text);
+  };
+
+  const persistGeneratedImage = (imageUrl: string | null) => {
+    if (imageUrl) {
+      localStorage.setItem("chat-generated-image", imageUrl);
+    } else {
+      localStorage.removeItem("chat-generated-image");
+    }
+    setGeneratedImage(imageUrl);
+  };
+
+  const persistSelectedImage = (imageUrl: string | null) => {
+    if (imageUrl) {
+      localStorage.setItem("chat-selected-image", imageUrl);
+    } else {
+      localStorage.removeItem("chat-selected-image");
+    }
+    setSelectedImage(imageUrl);
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -39,7 +90,7 @@ function ChatPage() {
   const handleImageUpload = (file: File) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      setSelectedImage(reader.result as string);
+      persistGeneratedImage(reader.result as string);
     };
     reader.readAsDataURL(file);
   };
@@ -93,28 +144,68 @@ function ChatPage() {
       if (apiResponse.ok) {
         const result = await apiResponse.json();
         if (result.success && result.imageUrl) {
-          setGeneratedImage(result.imageUrl);
+          persistGeneratedImage(result.imageUrl);
         } else {
           setError("Generation failed. Please try again in a moment.");
           // Fallback to original image if processing fails
-          setGeneratedImage(selectedImage);
+          persistGeneratedImage(selectedImage);
         }
       } else {
         setError("Generation failed. Please try again in a moment.");
         console.error("API call failed");
-        setGeneratedImage(selectedImage);
+        persistGeneratedImage(selectedImage);
       }
     } catch (error) {
       setError("Generation failed. Please try again in a moment.");
       console.error("Error generating image:", error);
       // Fallback to original image on error
-      setGeneratedImage(selectedImage);
+      persistGeneratedImage(selectedImage);
     } finally {
       setIsLoading(false);
     }
   };
 
   const isSubmitDisabled = !inputText.trim() || !selectedImage || isLoading;
+
+  const handleSetNewPromptPhoto = () => {
+    persistSelectedImage(generatedImage);
+  };
+
+  const handleBackgroundForegroundNavigation = (imageUrl: string) => {
+    const params = new URLSearchParams({
+      foregroundUrl: imageUrl,
+      foregroundTitle: "AI Generated Image",
+      foregroundThumbnail: imageUrl,
+    });
+    router.push(`/background?${params.toString()}`);
+  };
+
+  const handleBackgroundSettingNavigation = (imageUrl: string) => {
+    const params = new URLSearchParams({
+      backgroundUrl: imageUrl,
+      backgroundTitle: "AI Generated Image",
+      backgroundThumbnail: imageUrl,
+    });
+    router.push(`/background?${params.toString()}`);
+  };
+
+  const handleBackgroundColorNavigation = (imageUrl: string) => {
+    const params = new URLSearchParams({
+      imageUrl: imageUrl,
+      imageTitle: "AI Generated Image",
+      imageThumbnail: imageUrl,
+    });
+    router.push(`/background-color?${params.toString()}`);
+  };
+
+  const handleImageToVideoNavigation = (imageUrl: string) => {
+    const params = new URLSearchParams({
+      imageUrl: imageUrl,
+      imageTitle: "AI Generated Image",
+      imageThumbnail: imageUrl,
+    });
+    router.push(`/image-to-video?${params.toString()}`);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
@@ -285,6 +376,61 @@ function ChatPage() {
                     <Download className="w-4 h-4" />
                     <span className="text-sm font-medium">Download</span>
                   </button>
+
+                  {/* Action Buttons */}
+                  <div className="absolute bottom-2 left-2 flex gap-0.5 transition-opacity duration-200 bg-black/20 backdrop-blur-sm rounded-full p-0.5">
+                    {/* ChatBot Button */}
+                    <button
+                      onClick={() => handleSetNewPromptPhoto()}
+                      className="p-1 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg"
+                      title="ChatBot"
+                    >
+                      <BotMessageSquare size={12} />
+                    </button>
+                    {/* Foreground Button */}
+                    <button
+                      onClick={() =>
+                        handleBackgroundForegroundNavigation(generatedImage)
+                      }
+                      className="p-1 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors shadow-lg"
+                      title="Use as Foreground"
+                    >
+                      <BringToFront size={12} />
+                    </button>
+
+                    {/* Background Button */}
+                    <button
+                      onClick={() =>
+                        handleBackgroundSettingNavigation(generatedImage)
+                      }
+                      className="p-1 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors shadow-lg"
+                      title="Use as Background"
+                    >
+                      <Wallpaper size={12} />
+                    </button>
+
+                    {/* Background Color Button */}
+                    <button
+                      onClick={() =>
+                        handleBackgroundColorNavigation(generatedImage)
+                      }
+                      className="p-1 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors shadow-lg"
+                      title="Change Background Color"
+                    >
+                      <ImagePlus size={12} />
+                    </button>
+
+                    {/* Video Button */}
+                    <button
+                      onClick={() =>
+                        handleImageToVideoNavigation(generatedImage)
+                      }
+                      className="p-1 bg-orange-600 text-white rounded-full hover:bg-orange-700 transition-colors shadow-lg"
+                      title="Generate Video"
+                    >
+                      <Video size={12} />
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center p-6">
@@ -323,7 +469,7 @@ function ChatPage() {
             <textarea
               id="prompt"
               value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
+              onChange={(e) => persistInputText(e.target.value)}
               placeholder="Make this photo brighter and more vibrant with a cinematic look..."
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700"
               rows={4}
