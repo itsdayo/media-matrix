@@ -57,7 +57,7 @@ function ImageToVideoPage() {
         setGeneratedVideo(generatedVideo);
       }
     }
-  }, [searchParams, selectedImage]);
+  }, [searchParams]);
 
   // Helper functions to persist state
   const persistInputText = (text: string) => {

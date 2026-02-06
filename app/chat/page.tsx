@@ -62,7 +62,7 @@ function ChatPage() {
         setSelectedImage(selectedImage);
       }
     }
-  }, [imageId, imageUrl, selectedImage]);
+  }, [imageId, imageUrl]);
 
   // Helper functions to persist state
   const persistInputText = (text: string) => {
@@ -423,7 +423,10 @@ function ChatPage() {
                     AI Generated
                   </div>
                   <button
-                    onClick={() => setGeneratedImage(null)}
+                    onClick={() => {
+                      persistGeneratedImage(null);
+                      setGeneratedImage(null);
+                    }}
                     className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
                   >
                     <svg

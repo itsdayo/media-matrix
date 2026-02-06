@@ -22,6 +22,7 @@ function BackgroundColorPage() {
   const [processedImage, setProcessedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [imageId, setImageId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load persisted data on component mount
@@ -95,7 +96,7 @@ function BackgroundColorPage() {
       // Fallback to direct URL (for backward compatibility)
       persistSelectedImage(imageUrl);
     }
-  }, [searchParams, selectedImage]);
+  }, [searchParams]);
 
   const handleImageUpload = (file: File) => {
     const reader = new FileReader();
