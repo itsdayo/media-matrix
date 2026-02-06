@@ -287,38 +287,43 @@ export default function Gallery() {
   return (
     <div className="min-h-screen bg-white dark:bg-black">
       {/* Search Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <section className="py-12 sm:py-20 px-2 sm:px-4 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-8">
+          <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-900 dark:text-white mb-6 sm:mb-8">
             Photo Gallery
           </h2>
 
-          <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-8">
-            <div className="flex gap-2">
+          <form
+            onSubmit={handleSearch}
+            className="max-w-2xl mx-auto mb-6 sm:mb-8"
+          >
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
                 value={query}
                 onChange={handleInputChange}
                 placeholder="Search for images..."
-                className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-black text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 px-3 sm:px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-black text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
               />
-              <button
-                type="submit"
-                disabled={loading}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
-              >
-                {loading ? "Searching..." : "Search"}
-              </button>
-              {(query || images.length > 0) && (
+              <div className="flex gap-2">
                 <button
-                  type="button"
-                  onClick={clearSearchState}
-                  className="bg-gray-500 hover:bg-gray-600 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
-                  title="Clear search"
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold px-4 sm:px-6 py-3 rounded-lg transition-colors text-sm sm:text-base"
                 >
-                  Clear
+                  {loading ? "Searching..." : "Search"}
                 </button>
-              )}
+                {(query || images.length > 0) && (
+                  <button
+                    type="button"
+                    onClick={clearSearchState}
+                    className="flex-1 sm:flex-none bg-gray-500 hover:bg-gray-600 text-white font-semibold px-4 sm:px-6 py-3 rounded-lg transition-colors text-sm sm:text-base"
+                    title="Clear search"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
             </div>
           </form>
 
@@ -331,10 +336,10 @@ export default function Gallery() {
       </section>
 
       {/* Results Section */}
-      <section className="px-4 sm:px-6 lg:px-8 pb-20">
+      <section className="px-2 sm:px-4 lg:px-8 pb-16 sm:pb-20">
         <div className="max-w-7xl mx-auto">
           {images.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {images.map((image, index) => (
                 <div
                   key={index}
@@ -346,7 +351,7 @@ export default function Gallery() {
                     alt={image.title}
                     width={400}
                     height={192}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                     style={{ backgroundColor: "#f3f4f6" }}
                     onError={(e) => {
                       console.error("Image failed to load:", image.thumbnail);
@@ -359,10 +364,10 @@ export default function Gallery() {
                     {/* ChatBot Button */}
                     <button
                       onClick={() => handleChatNavigation(image)}
-                      className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg"
+                      className="p-1.5 sm:p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg"
                       title="ChatBot"
                     >
-                      <BotMessageSquare size={16} />
+                      <BotMessageSquare size={14} />
                     </button>
 
                     {/* Foreground Button */}
@@ -370,37 +375,37 @@ export default function Gallery() {
                       onClick={() =>
                         handleBackgroundForegroundNavigation(image)
                       }
-                      className="p-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors shadow-lg"
+                      className="p-1.5 sm:p-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors shadow-lg"
                       title="Foreground"
                     >
-                      <BringToFront size={16} />
+                      <BringToFront size={14} />
                     </button>
 
                     {/* Background Button */}
                     <button
                       onClick={() => handleBackgroundSettingNavigation(image)}
-                      className="p-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors shadow-lg"
+                      className="p-1.5 sm:p-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors shadow-lg"
                       title="Background"
                     >
-                      <Wallpaper size={16} />
+                      <Wallpaper size={14} />
                     </button>
 
                     {/* Background Color Button */}
                     <button
                       onClick={() => handleBackgroundColorNavigation(image)}
-                      className="p-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors shadow-lg"
+                      className="p-1.5 sm:p-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors shadow-lg"
                       title="Background Color"
                     >
-                      <ImagePlus size={16} />
+                      <ImagePlus size={14} />
                     </button>
 
                     {/* Video Button */}
                     <button
                       onClick={() => handleImageToVideoNavigation(image)}
-                      className="p-2 bg-orange-600 text-white rounded-full hover:bg-orange-700 transition-colors shadow-lg"
+                      className="p-1.5 sm:p-2 bg-orange-600 text-white rounded-full hover:bg-orange-700 transition-colors shadow-lg"
                       title="Generate Video"
                     >
-                      <Video size={16} />
+                      <Video size={14} />
                     </button>
                   </div>
 
@@ -423,58 +428,60 @@ export default function Gallery() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="mt-8 flex justify-center items-center gap-2">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1 || loading}
-                className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Previous
-              </button>
+            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1 || loading}
+                  className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                >
+                  Previous
+                </button>
 
-              <div className="flex gap-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
+                <div className="flex gap-1">
+                  {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 2) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 1) {
+                      pageNum = totalPages - 2 + i;
+                    } else {
+                      pageNum = currentPage - 1 + i;
+                    }
 
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => handlePageChange(pageNum)}
-                      disabled={loading}
-                      className={`px-3 py-2 rounded-lg transition-colors ${
-                        currentPage === pageNum
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
-                      } disabled:opacity-50 disabled:cursor-not-allowed`}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        disabled={loading}
+                        className={`px-3 py-2 rounded-lg transition-colors text-sm ${
+                          currentPage === pageNum
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages || loading}
+                  className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                >
+                  Next
+                </button>
               </div>
-
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages || loading}
-                className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Next
-              </button>
             </div>
           )}
 
           {/* Results info */}
           {images.length > 0 && (
-            <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+            <div className="mt-4 text-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
               Showing {images.length} of {totalResults} results (Page{" "}
               {currentPage} of {totalPages})
             </div>

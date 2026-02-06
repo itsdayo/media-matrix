@@ -222,22 +222,22 @@ function ImageToVideoPage() {
   const isSubmitDisabled = !inputText.trim() || !selectedImage || isLoading;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-4 sm:py-8 px-2 sm:px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
             AI Video Generation
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
+          <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
             Drop a photo and describe the video you want the AI to create
           </p>
         </div>
 
         {/* Main Content */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8">
           {/* Image Dropbox */}
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-center mb-6 sm:mb-8">
             <button
               type="button"
               aria-label="Upload image. Click to select or drag and drop"
@@ -250,10 +250,10 @@ function ImageToVideoPage() {
                     : "border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 hover:border-gray-400 dark:hover:border-gray-500"
               }`}
               style={{
-                width: "min(33vh, 33vw)",
-                height: "min(33vh, 33vw)",
-                maxWidth: "400px",
-                maxHeight: "400px",
+                width: "min(40vh, 90vw)",
+                height: "min(40vh, 90vw)",
+                maxWidth: "350px",
+                maxHeight: "350px",
               }}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -274,13 +274,13 @@ function ImageToVideoPage() {
                     preload={true}
                     src={selectedImage}
                     alt="Selected image"
-                    width={375}
-                    height={375}
+                    width={350}
+                    height={350}
                     style={{
-                      width: "min(30vh, 30vw)",
-                      height: "min(31vh, 31vw)",
-                      maxWidth: "375px",
-                      maxHeight: "375px",
+                      width: "min(35vh, 85vw)",
+                      height: "min(35vh, 85vw)",
+                      maxWidth: "350px",
+                      maxHeight: "350px",
                       margin: "auto",
                     }}
                   />
@@ -346,12 +346,12 @@ function ImageToVideoPage() {
           </div>
 
           {/* AI Result Preview */}
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-center mb-6 sm:mb-8">
             <div
               className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl flex items-center justify-center bg-gray-50 dark:bg-gray-900"
               style={{
-                width: "min(35vh, 35vw)",
-                height: "min(35vh, 35vw)",
+                width: "min(40vh, 90vw)",
+                height: "min(40vh, 90vw)",
                 maxWidth: "350px",
                 maxHeight: "350px",
               }}
@@ -366,7 +366,7 @@ function ImageToVideoPage() {
                     playsInline
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute top-2 left-2 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center space-x-1">
+                  <div className="absolute top-2 left-2 bg-green-500 text-white px-2 sm:px-3 py-1 rounded-full text-xs font-semibold flex items-center space-x-1">
                     <Video className="w-3 h-3" />
                     <span>AI Generated</span>
                   </div>
@@ -392,10 +392,12 @@ function ImageToVideoPage() {
                     onClick={() =>
                       handleDownload(generatedVideo, "ai-generated-video.mp4")
                     }
-                    className="absolute bottom-2 right-2 bg-blue-600 text-white px-3 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-700 transition-colors shadow-lg"
+                    className="absolute bottom-2 right-2 bg-blue-600 text-white px-2 sm:px-3 py-2 rounded-lg flex items-center space-x-1 sm:space-x-2 hover:bg-blue-700 transition-colors shadow-lg"
                   >
-                    <Download className="w-4 h-4" />
-                    <span className="text-sm font-medium">Download</span>
+                    <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="text-xs sm:text-sm font-medium">
+                      Download
+                    </span>
                   </button>
                 </div>
               ) : (
@@ -413,7 +415,7 @@ function ImageToVideoPage() {
           </div>
 
           {/* Text Input */}
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <label
               htmlFor="prompt"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
@@ -425,8 +427,8 @@ function ImageToVideoPage() {
               value={inputText}
               onChange={(e) => persistInputText(e.target.value)}
               placeholder="Make this foreground subject walk slowly towards the camera with a gentle smile..."
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700"
-              rows={4}
+              className="w-full px-3 sm:px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700 text-sm sm:text-base"
+              rows={3}
             />
           </div>
 
@@ -444,7 +446,7 @@ function ImageToVideoPage() {
             <button
               onClick={handleSubmit}
               disabled={isSubmitDisabled}
-              className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 ${
+              className={`px-6 sm:px-8 py-3 rounded-xl font-semibold transition-all duration-200 text-sm sm:text-base ${
                 isSubmitDisabled
                   ? "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                   : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
@@ -462,11 +464,11 @@ function ImageToVideoPage() {
           </div>
 
           {/* Instructions */}
-          <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+          <div className="mt-6 sm:mt-8 p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 text-sm sm:text-base">
               How it works:
             </h3>
-            <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+            <ol className="text-xs sm:text-sm text-blue-800 dark:text-blue-200 space-y-1">
               <li>1. Drop a photo in the box above</li>
               <li>2. Describe the video motion you want</li>
               <li>

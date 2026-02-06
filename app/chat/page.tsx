@@ -281,22 +281,22 @@ function ChatPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-4 sm:py-8 px-2 sm:px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
             AI Image Generation
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
+          <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
             Drop a photo and describe what you want the AI to generate
           </p>
         </div>
 
         {/* Main Content */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8">
           {/* Image Dropbox */}
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-center mb-6 sm:mb-8">
             <div
               className={`relative border-3 border-dashed rounded-2xl transition-all duration-200 cursor-pointer ${
                 isDragging
@@ -306,10 +306,10 @@ function ChatPage() {
                     : "border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 hover:border-gray-400 dark:hover:border-gray-500"
               }`}
               style={{
-                width: "min(33vh, 33vw)",
-                height: "min(33vh, 33vw)",
-                maxWidth: "400px",
-                maxHeight: "400px",
+                width: "min(40vh, 90vw)",
+                height: "min(40vh, 90vw)",
+                maxWidth: "350px",
+                maxHeight: "350px",
               }}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -330,14 +330,14 @@ function ChatPage() {
                     preload={true}
                     src={selectedImage}
                     alt="Selected image"
-                    width={375}
-                    height={375}
+                    width={350}
+                    height={350}
                     className="object-center"
                     style={{
-                      width: "min(30vh, 30vw)",
-                      height: "min(31vh, 31vw)",
-                      maxWidth: "375px",
-                      maxHeight: "375px",
+                      width: "min(35vh, 85vw)",
+                      height: "min(35vh, 85vw)",
+                      maxWidth: "350px",
+                      maxHeight: "350px",
                       margin: "auto",
                     }}
                   />
@@ -400,12 +400,12 @@ function ChatPage() {
           </div>
 
           {/* AI Result Preview */}
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-center mb-6 sm:mb-8">
             <div
               className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl flex items-center justify-center bg-gray-50 dark:bg-gray-900"
               style={{
-                width: "min(35vh, 35vw)",
-                height: "min(35vh, 35vw)",
+                width: "min(40vh, 90vw)",
+                height: "min(40vh, 90vw)",
                 maxWidth: "350px",
                 maxHeight: "350px",
               }}
@@ -458,7 +458,7 @@ function ChatPage() {
                       className="p-1 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg"
                       title="ChatBot"
                     >
-                      <BotMessageSquare size={12} />
+                      <BotMessageSquare size={10} />
                     </button>
                     {/* Foreground Button */}
                     <button
@@ -468,7 +468,7 @@ function ChatPage() {
                       className="p-1 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors shadow-lg"
                       title="Use as Foreground"
                     >
-                      <BringToFront size={12} />
+                      <BringToFront size={10} />
                     </button>
 
                     {/* Background Button */}
@@ -479,7 +479,7 @@ function ChatPage() {
                       className="p-1 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors shadow-lg"
                       title="Use as Background"
                     >
-                      <Wallpaper size={12} />
+                      <Wallpaper size={10} />
                     </button>
 
                     {/* Background Color Button */}
@@ -490,7 +490,7 @@ function ChatPage() {
                       className="p-1 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors shadow-lg"
                       title="Change Background Color"
                     >
-                      <ImagePlus size={12} />
+                      <ImagePlus size={10} />
                     </button>
 
                     {/* Video Button */}
@@ -501,7 +501,7 @@ function ChatPage() {
                       className="p-1 bg-orange-600 text-white rounded-full hover:bg-orange-700 transition-colors shadow-lg"
                       title="Generate Video"
                     >
-                      <Video size={12} />
+                      <Video size={10} />
                     </button>
                   </div>
                 </div>
@@ -532,7 +532,7 @@ function ChatPage() {
           </div>
 
           {/* Text Input */}
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <label
               htmlFor="prompt"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
@@ -544,8 +544,8 @@ function ChatPage() {
               value={inputText}
               onChange={(e) => persistInputText(e.target.value)}
               placeholder="Make this photo brighter and more vibrant with a cinematic look..."
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700"
-              rows={4}
+              className="w-full px-3 sm:px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700 text-sm sm:text-base"
+              rows={3}
             />
           </div>
 
@@ -563,7 +563,7 @@ function ChatPage() {
             <button
               onClick={handleSubmit}
               disabled={isSubmitDisabled}
-              className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 ${
+              className={`px-6 sm:px-8 py-3 rounded-xl font-semibold transition-all duration-200 text-sm sm:text-base ${
                 isSubmitDisabled
                   ? "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                   : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
@@ -581,11 +581,11 @@ function ChatPage() {
           </div>
 
           {/* Instructions */}
-          <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+          <div className="mt-6 sm:mt-8 p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 text-sm sm:text-base">
               How it works:
             </h3>
-            <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+            <ol className="text-xs sm:text-sm text-blue-800 dark:text-blue-200 space-y-1">
               <li>1. Drop a photo in the box above</li>
               <li>2. Describe what changes you want</li>
               <li>

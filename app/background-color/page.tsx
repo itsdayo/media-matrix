@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   Upload,
@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 
-export default function BackgroundColor() {
+function BackgroundColorPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -200,25 +200,25 @@ export default function BackgroundColor() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-6xl mx-auto px-2 sm:px-4 lg:px-8 py-8 sm:py-12">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
             New Background Color
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             Upload an image and select a color to change the background. Perfect
             for product photos, portraits, and creative projects.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
           {/* Left Column - Upload and Color Selection */}
           <div className="space-y-6">
             {/* Image Upload */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                <Upload className="w-5 h-5 mr-2" />
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                <Upload className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 Upload Image
               </h2>
 
@@ -227,13 +227,13 @@ export default function BackgroundColor() {
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
+                  className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 sm:p-8 text-center cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
                 >
-                  <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
-                  <p className="text-gray-600 dark:text-gray-400 mb-2">
+                  <Upload className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-2">
                     Drag and drop your image here
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-500">
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-500">
                     or click to browse
                   </p>
                   <input
@@ -249,13 +249,13 @@ export default function BackgroundColor() {
                   <Image
                     src={selectedImage}
                     alt="Selected image"
-                    width={375}
-                    height={375}
+                    width={350}
+                    height={350}
                     style={{
-                      width: "min(30vh, 30vw)",
-                      height: "min(31vh, 31vw)",
-                      maxWidth: "375px",
-                      maxHeight: "375px",
+                      width: "min(35vh, 85vw)",
+                      height: "min(35vh, 85vw)",
+                      maxWidth: "350px",
+                      maxHeight: "350px",
                       margin: "auto",
                     }}
                   />
@@ -264,7 +264,7 @@ export default function BackgroundColor() {
                       setSelectedImage(null);
                       setProcessedImage(null);
                     }}
-                    className="absolute top-2 right-36 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                    className="absolute top-2 right-2 sm:right-36 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
                   >
                     ×
                   </button>
@@ -273,21 +273,21 @@ export default function BackgroundColor() {
             </div>
 
             {/* Color Selector */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                <Palette className="w-5 h-5 mr-2" />
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                <Palette className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 Select Background Color
               </h2>
 
               <div className="space-y-4">
-                <div className="flex items-center space-x-4">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-4">
                   <input
                     type="color"
                     value={backgroundColor}
                     onChange={(e) => persistBackgroundColor(e.target.value)}
-                    className="w-20 h-20 rounded cursor-pointer"
+                    className="w-16 h-16 sm:w-20 sm:h-20 rounded cursor-pointer"
                   />
-                  <div className="flex-1">
+                  <div className="flex-1 w-full">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Hex Color Code
                     </label>
@@ -315,8 +315,8 @@ export default function BackgroundColor() {
 
           {/* Right Column - Result */}
           <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4">
                 Result
               </h2>
 
@@ -325,22 +325,22 @@ export default function BackgroundColor() {
                   <Image
                     src={processedImage}
                     alt="Processed image"
-                    width={375}
-                    height={375}
+                    width={350}
+                    height={350}
                     style={{
-                      width: "min(30vh, 30vw)",
-                      height: "min(31vh, 31vw)",
-                      maxWidth: "375px",
-                      maxHeight: "375px",
+                      width: "min(35vh, 85vw)",
+                      height: "min(35vh, 85vw)",
+                      maxWidth: "350px",
+                      maxHeight: "350px",
                       margin: "auto",
                     }}
                   />
-                  <div className="absolute top-2 left-36 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                  <div className="absolute top-2 left-2 sm:left-36 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
                     AI Generated
                   </div>
                   <button
                     onClick={() => persistProcessedImage(null)}
-                    className="absolute top-2 right-36 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
+                    className="absolute top-2 right-2 sm:right-36 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
                   >
                     <svg
                       className="w-4 h-4"
@@ -358,21 +358,21 @@ export default function BackgroundColor() {
                   </button>
                   <button
                     onClick={handleDownload}
-                    className="absolute bottom-2 right-36 bg-blue-600 text-white px-3 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-700 transition-colors shadow-lg"
+                    className="absolute bottom-2 right-2 sm:right-36 bg-blue-600 text-white px-3 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-700 transition-colors shadow-lg"
                   >
                     <Download className="w-4 h-4" />
                     <span className="text-sm font-medium">Download</span>
                   </button>
 
                   {/* Action Buttons */}
-                  <div className="absolute bottom-2 left-36 flex gap-0.5 transition-opacity duration-200 bg-black/20 backdrop-blur-sm rounded-full p-0.5">
+                  <div className="absolute bottom-2 left-2 sm:left-36 flex gap-0.5 transition-opacity duration-200 bg-black/20 backdrop-blur-sm rounded-full p-0.5">
                     {/* ChatBot Button */}
                     <button
                       onClick={() => handleChatNavigation(processedImage)}
                       className="p-1 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg"
                       title="ChatBot"
                     >
-                      <BotMessageSquare size={12} />
+                      <BotMessageSquare size={10} />
                     </button>
 
                     {/* Video Button */}
@@ -383,7 +383,7 @@ export default function BackgroundColor() {
                       className="p-1 bg-orange-600 text-white rounded-full hover:bg-orange-700 transition-colors shadow-lg"
                       title="Generate Video"
                     >
-                      <Video size={12} />
+                      <Video size={10} />
                     </button>
                   </div>
                 </div>
@@ -404,7 +404,7 @@ export default function BackgroundColor() {
             <button
               onClick={processImage}
               disabled={!selectedImage || isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors disabled:cursor-not-allowed"
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors disabled:cursor-not-allowed text-sm sm:text-base"
             >
               {isLoading ? "Processing..." : "Change Background Color"}
             </button>
@@ -419,11 +419,11 @@ export default function BackgroundColor() {
         </div>
 
         {/* Instructions */}
-        <div className="mt-12 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-3">
+        <div className="mt-8 sm:mt-12 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold text-blue-900 dark:text-blue-100 mb-3">
             How to Use Change Background Color
           </h3>
-          <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+          <ol className="text-xs sm:text-sm text-blue-800 dark:text-blue-200 space-y-1">
             <li>1. Upload an image with a clear subject and background</li>
             <li>
               2. Select your desired background color using the color picker
@@ -436,5 +436,20 @@ export default function BackgroundColor() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Wrap the main component in Suspense to handle useSearchParams
+export default function BackgroundColorPageWrapper() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+          <div className="text-gray-600 dark:text-gray-400">Loading...</div>
+        </div>
+      }
+    >
+      <BackgroundColorPage />
+    </Suspense>
   );
 }

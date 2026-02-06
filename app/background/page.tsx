@@ -270,23 +270,23 @@ function BackgroundPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-4 sm:py-8 px-2 sm:px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Background
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
+          <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
             Upload a foreground image and a background to create your perfect
             scene
           </p>
         </div>
 
         {/* Main Content */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8">
           {/* Image Upload Areas */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-6 sm:mb-8">
             {/* Foreground Image */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">
@@ -302,10 +302,10 @@ function BackgroundPage() {
                         : "border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 hover:border-gray-400 dark:hover:border-gray-500"
                   }`}
                   style={{
-                    width: "min(30vh, 30vw)",
-                    height: "min(30vh, 30vw)",
-                    maxWidth: "300px",
-                    maxHeight: "300px",
+                    width: "min(35vh, 85vw)",
+                    height: "min(35vh, 85vw)",
+                    maxWidth: "280px",
+                    maxHeight: "280px",
                   }}
                   onDragOver={(e) => handleDragOver(e, "foreground")}
                   onDragLeave={(e) => handleDragLeave(e, "foreground")}
@@ -326,13 +326,13 @@ function BackgroundPage() {
                         preload={true}
                         src={foregroundImage}
                         alt="Foreground image"
-                        width={375}
-                        height={375}
+                        width={280}
+                        height={280}
                         style={{
-                          width: "min(27vh, 27vw)",
-                          height: "min(27vh, 27vw)",
-                          maxWidth: "375px",
-                          maxHeight: "375px",
+                          width: "min(30vh, 80vw)",
+                          height: "min(30vh, 80vw)",
+                          maxWidth: "280px",
+                          maxHeight: "280px",
                           margin: "auto",
                         }}
                       />
@@ -418,10 +418,10 @@ function BackgroundPage() {
                   onDrop={(e) => handleDrop(e, "background")}
                   onClick={() => backgroundFileInputRef.current?.click()}
                   style={{
-                    width: "min(30vh, 30vw)",
-                    height: "min(30vh, 30vw)",
-                    maxWidth: "300px",
-                    maxHeight: "300px",
+                    width: "min(35vh, 85vw)",
+                    height: "min(35vh, 85vw)",
+                    maxWidth: "280px",
+                    maxHeight: "280px",
                   }}
                 >
                   <input
@@ -438,13 +438,13 @@ function BackgroundPage() {
                         preload={true}
                         src={backgroundImage}
                         alt="Background image"
-                        width={375}
-                        height={375}
+                        width={280}
+                        height={280}
                         style={{
-                          width: "min(27vh, 27vw)",
-                          height: "min(27vh, 27vw)",
-                          maxWidth: "365px",
-                          maxHeight: "365px",
+                          width: "min(30vh, 80vw)",
+                          height: "min(30vh, 80vw)",
+                          maxWidth: "280px",
+                          maxHeight: "280px",
                           margin: "auto",
                         }}
                       />
@@ -512,10 +512,10 @@ function BackgroundPage() {
           </div>
 
           {/* Plus Symbol */}
-          <div className="flex justify-center mb-8">
-            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+          <div className="flex justify-center mb-6 sm:mb-8">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
               <svg
-                className="w-6 h-6 text-blue-600 dark:text-blue-400"
+                className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -531,12 +531,12 @@ function BackgroundPage() {
           </div>
 
           {/* Result Preview Area */}
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-center mb-6 sm:mb-8">
             <div
               className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl flex items-center justify-center relative overflow-hidden"
               style={{
-                width: "min(35vh, 35vw)",
-                height: "min(35vh, 35vw)",
+                width: "min(40vh, 90vw)",
+                height: "min(40vh, 90vw)",
                 maxWidth: "350px",
                 maxHeight: "350px",
               }}
@@ -588,7 +588,7 @@ function BackgroundPage() {
                       className="p-1 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg"
                       title="ChatBot"
                     >
-                      <BotMessageSquare size={12} />
+                      <BotMessageSquare size={10} />
                     </button>
 
                     {/* Video Button */}
@@ -597,7 +597,7 @@ function BackgroundPage() {
                       className="p-1 bg-orange-600 text-white rounded-full hover:bg-orange-700 transition-colors shadow-lg"
                       title="Generate Video"
                     >
-                      <Video size={12} />
+                      <Video size={10} />
                     </button>
                   </div>
                 </div>
@@ -641,7 +641,7 @@ function BackgroundPage() {
             <button
               onClick={handleSubmit}
               disabled={isSubmitDisabled}
-              className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 ${
+              className={`px-6 sm:px-8 py-3 rounded-xl font-semibold transition-all duration-200 text-sm sm:text-base ${
                 isSubmitDisabled
                   ? "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                   : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
@@ -659,11 +659,11 @@ function BackgroundPage() {
           </div>
 
           {/* Instructions */}
-          <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+          <div className="mt-6 sm:mt-8 p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 text-sm sm:text-base">
               How it works:
             </h3>
-            <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+            <ol className="text-xs sm:text-sm text-blue-800 dark:text-blue-200 space-y-1">
               <li>1. Upload a foreground on the left</li>
               <li>2. Upload a background on the right</li>
               <li>

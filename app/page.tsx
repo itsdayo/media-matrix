@@ -99,14 +99,14 @@ export default function Home() {
 
             {/* Right side - Image demonstration */}
             <div className="flex flex-col items-center lg:items-end space-y-4">
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-col sm:flex-row items-center space-x-0 sm:space-x-4 space-y-4 sm:space-y-0">
                 <div className="relative">
                   <Image
                     preload={true}
                     src="/images/man-swimsuit.png"
                     alt="Man in swimsuit"
-                    width={128}
-                    height={128}
+                    width={96}
+                    height={96}
                     className="object-cover rounded-lg shadow-md"
                   />
                   <span className="absolute -top-2 -left-2 bg-blue-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
@@ -121,8 +121,8 @@ export default function Home() {
                     preload={true}
                     src="/images/beach.png"
                     alt="Beach background"
-                    width={128}
-                    height={128}
+                    width={96}
+                    height={96}
                     className="object-cover rounded-lg shadow-md"
                   />
                   <span className="absolute -top-2 -left-2 bg-blue-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
@@ -137,8 +137,8 @@ export default function Home() {
                     preload={true}
                     src="/images/manbeach.png"
                     alt="Man on beach result"
-                    width={160}
-                    height={160}
+                    width={120}
+                    height={120}
                     className="object-cover rounded-lg shadow-lg border-2 border-blue-500"
                   />
                   <span className="absolute -top-2 -left-2 bg-green-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
@@ -146,7 +146,7 @@ export default function Home() {
                   </span>
                 </div>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 text-center lg:text-right">
+              <p className="text-sm text-gray-600 dark:text-gray-400 text-center lg:text-right max-w-sm">
                 Combine multiple elements with AI to create your perfect image
               </p>
             </div>
@@ -160,7 +160,7 @@ export default function Home() {
           <h3 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
             Powerful Features
           </h3>
-          <div className="flex flex-wrap justify-center gap-8">
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 lg:gap-8">
             {features.map((feature) => {
               const Icon = feature.icon;
               const isSelected = selectedFeature.id === feature.id;
@@ -191,15 +191,15 @@ export default function Home() {
                       .getElementById("how-it-works")
                       ?.scrollIntoView({ behavior: "smooth" });
                   }}
-                  className={`text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 transition-all hover:shadow-lg w-80 ${borderColorClass}`}
+                  className={`text-center p-4 sm:p-6 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 transition-all hover:shadow-lg w-full sm:w-80 ${borderColorClass}`}
                 >
                   <Icon
-                    className={`w-12 h-12 ${iconColorClass} mx-auto mb-4`}
+                    className={`w-10 h-10 sm:w-12 sm:h-12 ${iconColorClass} mx-auto mb-3 sm:mb-4`}
                   />
-                  <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  <h4 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">
                     {feature.title}
                   </h4>
-                  <p className="text-gray-600 dark:text-gray-300">
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
                     {feature.description}
                   </p>
                 </button>
@@ -216,12 +216,12 @@ export default function Home() {
       >
         <div className="max-w-7xl mx-auto">
           <h3 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
-           {selectedFeature.title}
+            {selectedFeature.title}
           </h3>
           <h3 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-12">
             How It Works
           </h3>
-          <div className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-4 max-w-4xl mx-auto">
             {(() => {
               const selectedFeatureData = features.find(
                 (f) => f.id === selectedFeature.id,
@@ -230,7 +230,7 @@ export default function Home() {
               return selectedFeatureData.steps.map((step, index) => (
                 <div
                   key={index}
-                  className={`text-center border-l border-r border-gray-300 dark:border-gray-600 px-4 ${
+                  className={`text-center border-l border-r border-gray-300 dark:border-gray-600 px-2 sm:px-4 ${
                     selectedFeatureData.steps.length === 2
                       ? "w-full sm:w-1/2"
                       : selectedFeatureData.steps.length === 3
@@ -238,13 +238,15 @@ export default function Home() {
                         : "w-full sm:w-1/2 lg:w-1/4"
                   }`}
                 >
-                  <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 text-xl sm:text-2xl font-bold">
                     {index + 1}
                   </div>
-                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-2">
                     {step.split(" ").slice(0, 1).join(" ")}
                   </h4>
-                  <p className="text-gray-600 dark:text-gray-300">{step}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    {step}
+                  </p>
                 </div>
               ));
             })()}
@@ -252,7 +254,7 @@ export default function Home() {
           <div className="text-center mt-8">
             <button
               onClick={() => router.push(selectedFeature.url)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 sm:px-8 rounded-lg transition-colors text-sm sm:text-base"
             >
               Start Generating
             </button>
@@ -269,10 +271,10 @@ export default function Home() {
           <p className="text-xl text-blue-100 mb-8">
             Join thousands of creators using AI to bring their visions to life
           </p>
-          <div className="space-x-4">
+          <div className="space-x-0 sm:space-x-4 space-y-4 sm:space-y-0">
             <button
               onClick={() => router.push("/gallery")}
-              className="border-2 border-white text-white hover:bg-white hover:text-blue-600 font-semibold py-3 px-8 rounded-lg transition-colors"
+              className="block sm:inline-block border-2 border-white text-white hover:bg-white hover:text-blue-600 font-semibold py-3 px-6 sm:px-8 rounded-lg transition-colors text-sm sm:text-base w-full sm:w-auto"
             >
               View Gallery
             </button>
