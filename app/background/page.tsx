@@ -14,6 +14,8 @@ import {
 import { downloadFile } from "../utils/download";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { addTransfer, consumeTransfer, updateBackground } from "../store/store";
+import { useGenerationLimit } from "../hooks/useGenerationLimit";
+import GenerationUsage from "../components/GenerationUsage";
 
 function BackgroundPage() {
   const searchParams = useSearchParams();
@@ -27,6 +29,7 @@ function BackgroundPage() {
   const dispatch = useAppDispatch();
   const { foregroundImage, backgroundImage, resultImage } = useAppSelector((state) => state.media.background);
   const transfers = useAppSelector((state) => state.media.transfers);
+  const usage = useGenerationLimit();
   const [isDraggingForeground, setIsDraggingForeground] = useState(false);
   const [isDraggingBackground, setIsDraggingBackground] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -142,6 +145,10 @@ function BackgroundPage() {
 
   const handleSubmit = async () => {
     if (!foregroundImage || !backgroundImage) return;
+    if (!usage.hydrated || usage.limitReached) {
+      setError("You have used your 3 free generations. Upgrade to continue.");
+      return;
+    }
 
     setIsLoading(true);
     persistResultImage(null);
@@ -175,6 +182,7 @@ function BackgroundPage() {
         // Optionally set result image if the API returns it
         if (result.imageUrl) {
           persistResultImage(result.imageUrl);
+          await usage.recordSuccessfulGeneration();
         }
       } else {
         setError("Generation failed. Please try again in a moment.");
@@ -188,7 +196,7 @@ function BackgroundPage() {
     }
   };
 
-  const isSubmitDisabled = !foregroundImage || !backgroundImage || isLoading;
+  const isSubmitDisabled = !foregroundImage || !backgroundImage || isLoading || !usage.hydrated || usage.limitReached;
 
   // Navigation handlers
   const handleChatNavigation = (imageUrl: string) => {
@@ -226,6 +234,7 @@ function BackgroundPage() {
             Upload a foreground image and a background to create your perfect
             scene
           </p>
+          <GenerationUsage count={usage.count} hydrated={usage.hydrated} />
         </div>
 
         {/* Main Content */}

@@ -16,6 +16,8 @@ import Image from "next/image";
 import { downloadFile } from "../utils/download";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { addTransfer, consumeTransfer, updateBackgroundColor } from "../store/store";
+import { useGenerationLimit } from "../hooks/useGenerationLimit";
+import GenerationUsage from "../components/GenerationUsage";
 
 function BackgroundColorPage() {
   const searchParams = useSearchParams();
@@ -23,6 +25,7 @@ function BackgroundColorPage() {
   const dispatch = useAppDispatch();
   const { selectedImage, backgroundColor, processedImage } = useAppSelector((state) => state.media.backgroundColor);
   const transfers = useAppSelector((state) => state.media.transfers);
+  const usage = useGenerationLimit();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -91,6 +94,10 @@ function BackgroundColorPage() {
 
   const processImage = async () => {
     if (!selectedImage) return;
+    if (!usage.hydrated || usage.limitReached) {
+      setError("You have used your 3 free generations. Upgrade to continue.");
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -115,6 +122,7 @@ function BackgroundColorPage() {
 
       const data = await response.json();
       persistProcessedImage(data.imageUrl);
+      await usage.recordSuccessfulGeneration();
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -163,6 +171,7 @@ function BackgroundColorPage() {
             Upload an image and select a color to change the background. Perfect
             for product photos, portraits, and creative projects.
           </p>
+          <GenerationUsage count={usage.count} hydrated={usage.hydrated} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
@@ -356,10 +365,10 @@ function BackgroundColorPage() {
             {/* Process Button */}
             <button
               onClick={processImage}
-              disabled={!selectedImage || isLoading}
+              disabled={!selectedImage || isLoading || !usage.hydrated || usage.limitReached}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors disabled:cursor-not-allowed text-sm sm:text-base"
             >
-              {isLoading ? "Processing..." : "Change Background Color"}
+              {isLoading ? "Processing..." : usage.limitReached ? "Upgrade to Continue" : "Change Background Color"}
             </button>
 
             {/* Error Display */}

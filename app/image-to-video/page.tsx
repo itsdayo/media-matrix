@@ -7,6 +7,8 @@ import { Download, Video } from "lucide-react";
 import { downloadFile } from "../utils/download";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { consumeTransfer, updateVideo } from "../store/store";
+import { useGenerationLimit } from "../hooks/useGenerationLimit";
+import GenerationUsage from "../components/GenerationUsage";
 
 function ImageToVideoPage() {
   const router = useRouter();
@@ -14,6 +16,7 @@ function ImageToVideoPage() {
   const dispatch = useAppDispatch();
   const { inputText, selectedImage, generatedVideo } = useAppSelector((state) => state.media.video);
   const transfers = useAppSelector((state) => state.media.transfers);
+  const usage = useGenerationLimit();
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -95,6 +98,10 @@ function ImageToVideoPage() {
 
   const handleSubmit = async () => {
     if (!inputText.trim() || !selectedImage) return;
+    if (!usage.hydrated || usage.limitReached) {
+      setError("You have used your 3 free generations. Upgrade to continue.");
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -120,6 +127,7 @@ function ImageToVideoPage() {
         const result = await apiResponse.json();
         if (result.success && result.videoUrl) {
           persistGeneratedVideo(result.videoUrl);
+          await usage.recordSuccessfulGeneration();
         } else {
           setError("Generation failed. Please try again in a moment.");
           console.error("Failed to generate video:", result.error);
@@ -136,7 +144,7 @@ function ImageToVideoPage() {
     }
   };
 
-  const isSubmitDisabled = !inputText.trim() || !selectedImage || isLoading;
+  const isSubmitDisabled = !inputText.trim() || !selectedImage || isLoading || !usage.hydrated || usage.limitReached;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-4 sm:py-8 px-2 sm:px-4">
@@ -149,6 +157,7 @@ function ImageToVideoPage() {
           <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
             Drop a photo and describe the video you want the AI to create
           </p>
+          <GenerationUsage count={usage.count} hydrated={usage.hydrated} />
         </div>
 
         {/* Main Content */}

@@ -14,6 +14,8 @@ import {
 import { downloadFile } from "../utils/download";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { addTransfer, consumeTransfer, updateChat } from "../store/store";
+import { useGenerationLimit } from "../hooks/useGenerationLimit";
+import GenerationUsage from "../components/GenerationUsage";
 
 function ChatPage() {
   const searchParams = useSearchParams();
@@ -23,6 +25,7 @@ function ChatPage() {
   const dispatch = useAppDispatch();
   const { inputText, selectedImage, generatedImage } = useAppSelector((state) => state.media.chat);
   const transfers = useAppSelector((state) => state.media.transfers);
+  const usage = useGenerationLimit();
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -97,6 +100,10 @@ function ChatPage() {
 
   const handleSubmit = async () => {
     if (!inputText.trim() || !selectedImage) return;
+    if (!usage.hydrated || usage.limitReached) {
+      setError("You have used your 3 free generations. Upgrade to continue.");
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -121,6 +128,7 @@ function ChatPage() {
         const result = await apiResponse.json();
         if (result.success && result.imageUrl) {
           persistGeneratedImage(result.imageUrl);
+          await usage.recordSuccessfulGeneration();
         } else {
           setError("Generation failed. Please try again in a moment.");
           // Fallback to original image if processing fails
@@ -141,7 +149,7 @@ function ChatPage() {
     }
   };
 
-  const isSubmitDisabled = !inputText.trim() || !selectedImage || isLoading;
+  const isSubmitDisabled = !inputText.trim() || !selectedImage || isLoading || !usage.hydrated || usage.limitReached;
 
   const handleSetNewPromptPhoto = () => {
     persistSelectedImage(generatedImage);
@@ -206,6 +214,7 @@ function ChatPage() {
           <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
             Drop a photo and describe what you want the AI to generate
           </p>
+          <GenerationUsage count={usage.count} hydrated={usage.hydrated} />
         </div>
 
         {/* Main Content */}
@@ -339,7 +348,6 @@ function ChatPage() {
                   </div>
                   <button
                     onClick={() => {
-                      persistGeneratedImage(null);
                       persistGeneratedImage(null);
                     }}
                     className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"

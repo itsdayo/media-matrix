@@ -13,6 +13,7 @@ interface MediaState {
   video: { inputText: string; selectedImage: string | null; generatedVideo: string | null };
   gallery: { query: string; images: GalleryImage[]; debouncedQuery: string; currentPage: number; totalPages: number; totalResults: number };
   transfers: Record<string, string>;
+  usage: { count: number; hydrated: boolean };
 }
 
 const initialState: MediaState = {
@@ -22,6 +23,7 @@ const initialState: MediaState = {
   video: { inputText: "", selectedImage: null, generatedVideo: null },
   gallery: { query: "", images: [], debouncedQuery: "", currentPage: 1, totalPages: 0, totalResults: 0 },
   transfers: {},
+  usage: { count: 0, hydrated: false },
 };
 
 const mediaSlice = createSlice({
@@ -38,10 +40,11 @@ const mediaSlice = createSlice({
       state.transfers = { [action.payload.id]: action.payload.url };
     },
     consumeTransfer: (state, action: PayloadAction<string>) => { delete state.transfers[action.payload]; },
+    setGenerationUsage: (state, action: PayloadAction<MediaState["usage"]>) => { state.usage = action.payload; },
   },
 });
 
-export const { updateChat, updateBackground, updateBackgroundColor, updateVideo, updateGallery, clearGallery, addTransfer, consumeTransfer } = mediaSlice.actions;
+export const { updateChat, updateBackground, updateBackgroundColor, updateVideo, updateGallery, clearGallery, addTransfer, consumeTransfer, setGenerationUsage } = mediaSlice.actions;
 export const makeStore = () => configureStore({
   reducer: { media: mediaSlice.reducer },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false }),
