@@ -12,121 +12,45 @@ import {
   Video,
 } from "lucide-react";
 import { downloadFile } from "../utils/download";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { addTransfer, consumeTransfer, updateChat } from "../store/store";
 
 function ChatPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const imageUrl = searchParams.get("imageUrl");
   const imageId = searchParams.get("imageId");
-  const [inputText, setInputText] = useState("");
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const { inputText, selectedImage, generatedImage } = useAppSelector((state) => state.media.chat);
+  const transfers = useAppSelector((state) => state.media.transfers);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load persisted data on component mount
   useEffect(() => {
-    const persistedInputText = sessionStorage.getItem("chat-input-text");
-    const persistedGeneratedId = sessionStorage.getItem(
-      "chat-current-generated-id",
-    );
-    const persistedSelectedId = sessionStorage.getItem(
-      "chat-current-selected-id",
-    );
-
-    if (persistedInputText) {
-      setInputText(persistedInputText);
-    }
-
-    // Handle imageId from navigation
     if (imageId && !selectedImage) {
-      const image = sessionStorage.getItem(imageId);
+      const image = transfers[imageId];
       if (image) {
         persistSelectedImage(image);
+        dispatch(consumeTransfer(imageId));
       }
     } else if (imageUrl && !selectedImage) {
-      // Fallback to direct URL (for backward compatibility)
       persistSelectedImage(imageUrl);
     }
-
-    if (persistedGeneratedId) {
-      const generatedImage = getGeneratedImageById(persistedGeneratedId);
-      if (generatedImage) {
-        setGeneratedImage(generatedImage);
-      }
-    }
-    if (persistedSelectedId && !imageId && !imageUrl) {
-      const selectedImage = getSelectedImageById(persistedSelectedId);
-      if (selectedImage) {
-        setSelectedImage(selectedImage);
-      }
-    }
-  }, [imageId, imageUrl]);
+  }, [imageId, imageUrl, selectedImage, transfers, dispatch]);
 
   // Helper functions to persist state
   const persistInputText = (text: string) => {
-    // Remove old data first
-    sessionStorage.removeItem("chat-input-text");
-    sessionStorage.setItem("chat-input-text", text);
-    setInputText(text);
+    dispatch(updateChat({ inputText: text }));
   };
 
   const persistGeneratedImage = (imageUrl: string | null) => {
-    // Remove old data first
-    const currentId = sessionStorage.getItem("chat-current-generated-id");
-    if (currentId) {
-      sessionStorage.removeItem(`chat-generated-image-${currentId}`);
-      sessionStorage.removeItem("chat-current-generated-id");
-    }
-
-    if (imageUrl) {
-      // Generate a unique ID for this image
-      const imageId = `generated-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      sessionStorage.setItem(`chat-generated-image-${imageId}`, imageUrl);
-      sessionStorage.setItem("chat-current-generated-id", imageId);
-      setGeneratedImage(imageUrl);
-    } else {
-      setGeneratedImage(null);
-    }
+    dispatch(updateChat({ generatedImage: imageUrl }));
   };
 
   const persistSelectedImage = (imageUrl: string | null) => {
-    // Remove old data first
-    const currentId = sessionStorage.getItem("chat-current-selected-id");
-    if (currentId) {
-      sessionStorage.removeItem(`chat-selected-image-${currentId}`);
-      sessionStorage.removeItem("chat-current-selected-id");
-    }
-
-    if (imageUrl) {
-      // Generate a unique ID for this image
-      const imageId = `selected-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      sessionStorage.setItem(`chat-selected-image-${imageId}`, imageUrl);
-      sessionStorage.setItem("chat-current-selected-id", imageId);
-      setSelectedImage(imageUrl);
-    } else {
-      setSelectedImage(null);
-    }
-  };
-
-  // Helper function to get image by ID
-  const getImageById = (imageId: string | null) => {
-    if (!imageId) return null;
-    return sessionStorage.getItem(imageId);
-  };
-
-  // Helper function to get selected image by ID (with proper key prefix)
-  const getSelectedImageById = (imageId: string | null) => {
-    if (!imageId) return null;
-    return sessionStorage.getItem(`chat-selected-image-${imageId}`);
-  };
-
-  // Helper function to get generated image by ID (with proper key prefix)
-  const getGeneratedImageById = (imageId: string | null) => {
-    if (!imageId) return null;
-    return sessionStorage.getItem(`chat-generated-image-${imageId}`);
+    dispatch(updateChat({ selectedImage: imageUrl }));
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -226,7 +150,7 @@ function ChatPage() {
   const handleBackgroundForegroundNavigation = (imageUrl: string) => {
     // Store the image with a unique ID and pass the ID in URL
     const imageId = `nav-foreground-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    sessionStorage.setItem(imageId, imageUrl);
+    dispatch(addTransfer({ id: imageId, url: imageUrl }));
 
     const params = new URLSearchParams({
       imageId: imageId,
@@ -238,7 +162,7 @@ function ChatPage() {
   const handleBackgroundSettingNavigation = (imageUrl: string) => {
     // Store the image with a unique ID and pass the ID in URL
     const imageId = `nav-background-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    sessionStorage.setItem(imageId, imageUrl);
+    dispatch(addTransfer({ id: imageId, url: imageUrl }));
 
     const params = new URLSearchParams({
       imageId: imageId,
@@ -250,7 +174,7 @@ function ChatPage() {
   const handleBackgroundColorNavigation = (imageUrl: string) => {
     // Store the image with a unique ID and pass the ID in URL
     const imageId = `nav-bg-color-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    sessionStorage.setItem(imageId, imageUrl);
+    dispatch(addTransfer({ id: imageId, url: imageUrl }));
 
     const params = new URLSearchParams({
       imageId: imageId,
@@ -262,7 +186,7 @@ function ChatPage() {
   const handleImageToVideoNavigation = (imageUrl: string) => {
     // Store the image with a unique ID and pass the ID in URL
     const imageId = `nav-video-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    sessionStorage.setItem(imageId, imageUrl);
+    dispatch(addTransfer({ id: imageId, url: imageUrl }));
 
     const params = new URLSearchParams({
       imageId: imageId,
@@ -416,7 +340,7 @@ function ChatPage() {
                   <button
                     onClick={() => {
                       persistGeneratedImage(null);
-                      setGeneratedImage(null);
+                      persistGeneratedImage(null);
                     }}
                     className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
                   >

@@ -11,6 +11,8 @@ import {
   Video,
 } from "lucide-react";
 import { getUnsplashImages } from "../api/actions";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { addTransfer, clearGallery, updateGallery } from "../store/store";
 
 interface ImageResult {
   url: string;
@@ -27,84 +29,11 @@ interface PaginationData {
 
 export default function Gallery() {
   const router = useRouter();
-  const [query, setQuery] = useState("");
-  const [images, setImages] = useState<ImageResult[]>([]);
-  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const dispatch = useAppDispatch();
+  const { query, images, debouncedQuery, currentPage, totalPages, totalResults } = useAppSelector((state) => state.media.gallery);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [totalResults, setTotalResults] = useState(0);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Load saved search query and results on mount
-  useEffect(() => {
-    const savedQuery = sessionStorage.getItem("gallery_search_query");
-    const savedImages = sessionStorage.getItem("gallery_search_images");
-    const savedDebouncedQuery = sessionStorage.getItem(
-      "gallery_debounced_query",
-    );
-    const savedCurrentPage = sessionStorage.getItem("gallery_current_page");
-    const savedTotalPages = sessionStorage.getItem("gallery_total_pages");
-    const savedTotalResults = sessionStorage.getItem("gallery_total_results");
-
-    if (savedQuery) {
-      setQuery(savedQuery);
-      setDebouncedQuery(savedDebouncedQuery || savedQuery);
-    }
-
-    if (savedImages) {
-      try {
-        const parsedImages = JSON.parse(savedImages);
-        setImages(parsedImages);
-      } catch (err) {
-        console.error("Failed to parse saved images:", err);
-      }
-    }
-
-    if (savedCurrentPage) {
-      setCurrentPage(parseInt(savedCurrentPage, 10));
-    }
-
-    if (savedTotalPages) {
-      setTotalPages(parseInt(savedTotalPages, 10));
-    }
-
-    if (savedTotalResults) {
-      setTotalResults(parseInt(savedTotalResults, 10));
-    }
-  }, []);
-
-  // Save search state to sessionStorage whenever it changes
-  useEffect(() => {
-    if (query) {
-      sessionStorage.setItem("gallery_search_query", query);
-    }
-  }, [query]);
-
-  useEffect(() => {
-    if (debouncedQuery) {
-      sessionStorage.setItem("gallery_debounced_query", debouncedQuery);
-    }
-  }, [debouncedQuery]);
-
-  useEffect(() => {
-    if (images.length > 0) {
-      sessionStorage.setItem("gallery_search_images", JSON.stringify(images));
-    }
-  }, [images]);
-
-  useEffect(() => {
-    sessionStorage.setItem("gallery_current_page", currentPage.toString());
-  }, [currentPage]);
-
-  useEffect(() => {
-    sessionStorage.setItem("gallery_total_pages", totalPages.toString());
-  }, [totalPages]);
-
-  useEffect(() => {
-    sessionStorage.setItem("gallery_total_results", totalResults.toString());
-  }, [totalResults]);
 
   // Debounced search function
   const performSearch = async (searchQuery: string, page: number = 1) => {
@@ -112,13 +41,10 @@ export default function Gallery() {
 
     setLoading(true);
     setError("");
-    setDebouncedQuery(searchQuery);
+    dispatch(updateGallery({ debouncedQuery: searchQuery }));
     try {
       const results = await getUnsplashImages(searchQuery, page);
-      setImages(results.images);
-      setCurrentPage(results.currentPage);
-      setTotalPages(results.totalPages);
-      setTotalResults(results.totalResults || 0);
+      dispatch(updateGallery({ images: results.images, currentPage: results.currentPage, totalPages: results.totalPages, totalResults: results.totalResults || 0 }));
     } catch (err) {
       console.error(err);
       setError("Failed to fetch images. Please try again.");
@@ -130,7 +56,7 @@ export default function Gallery() {
   // Debounced input change handler
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setQuery(value);
+    dispatch(updateGallery({ query: value }));
 
     // Clear existing timeout
     if (debounceTimeoutRef.current) {
@@ -154,29 +80,16 @@ export default function Gallery() {
 
   // Clear search state
   const clearSearchState = () => {
-    sessionStorage.removeItem("gallery_search_query");
-    sessionStorage.removeItem("gallery_search_images");
-    sessionStorage.removeItem("gallery_debounced_query");
-    setQuery("");
-    setImages([]);
-    setDebouncedQuery("");
+    dispatch(clearGallery());
     setError("");
-    setCurrentPage(1);
-    setTotalPages(0);
-    setTotalResults(0);
   };
 
-  // Handle navigation with image data via sessionStorage and URL parameters
+  // Handle navigation with image data via Redux and URL parameters
   const handleChatNavigation = (image: ImageResult) => {
     // Clear old gallery chat data first
-    const oldChatKeys = Object.keys(sessionStorage).filter((key) =>
-      key.startsWith("gallery-chat-"),
-    );
-    oldChatKeys.forEach((key) => sessionStorage.removeItem(key));
-
     // Store the image with a unique ID and pass the ID in URL
     const imageId = `gallery-chat-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    sessionStorage.setItem(imageId, image.url);
+    dispatch(addTransfer({ id: imageId, url: image.url }));
 
     const params = new URLSearchParams({
       imageId: imageId,
@@ -188,14 +101,9 @@ export default function Gallery() {
 
   const handleBackgroundForegroundNavigation = (image: ImageResult) => {
     // Clear old gallery foreground data first
-    const oldForegroundKeys = Object.keys(sessionStorage).filter((key) =>
-      key.startsWith("gallery-foreground-"),
-    );
-    oldForegroundKeys.forEach((key) => sessionStorage.removeItem(key));
-
     // Store the image with a unique ID and pass the ID in URL
     const imageId = `gallery-foreground-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    sessionStorage.setItem(imageId, image.url);
+    dispatch(addTransfer({ id: imageId, url: image.url }));
 
     const params = new URLSearchParams({
       imageId: imageId,
@@ -207,14 +115,9 @@ export default function Gallery() {
 
   const handleBackgroundSettingNavigation = (image: ImageResult) => {
     // Clear old gallery background data first
-    const oldBackgroundKeys = Object.keys(sessionStorage).filter((key) =>
-      key.startsWith("gallery-background-"),
-    );
-    oldBackgroundKeys.forEach((key) => sessionStorage.removeItem(key));
-
     // Store the image with a unique ID and pass the ID in URL
     const imageId = `gallery-background-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    sessionStorage.setItem(imageId, image.url);
+    dispatch(addTransfer({ id: imageId, url: image.url }));
 
     const params = new URLSearchParams({
       imageId: imageId,
@@ -226,14 +129,9 @@ export default function Gallery() {
 
   const handleBackgroundColorNavigation = (image: ImageResult) => {
     // Clear old gallery bg-color data first
-    const oldBgColorKeys = Object.keys(sessionStorage).filter((key) =>
-      key.startsWith("gallery-bg-color-"),
-    );
-    oldBgColorKeys.forEach((key) => sessionStorage.removeItem(key));
-
     // Store the image with a unique ID and pass the ID in URL
     const imageId = `gallery-bg-color-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    sessionStorage.setItem(imageId, image.url);
+    dispatch(addTransfer({ id: imageId, url: image.url }));
 
     const params = new URLSearchParams({
       imageId: imageId,
@@ -245,14 +143,9 @@ export default function Gallery() {
 
   const handleImageToVideoNavigation = (image: ImageResult) => {
     // Clear old gallery video data first
-    const oldVideoKeys = Object.keys(sessionStorage).filter((key) =>
-      key.startsWith("gallery-video-"),
-    );
-    oldVideoKeys.forEach((key) => sessionStorage.removeItem(key));
-
     // Store the image with a unique ID and pass the ID in URL
     const imageId = `gallery-video-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    sessionStorage.setItem(imageId, image.url);
+    dispatch(addTransfer({ id: imageId, url: image.url }));
 
     const params = new URLSearchParams({
       imageId: imageId,
@@ -272,7 +165,7 @@ export default function Gallery() {
     }
 
     // Reset to first page for new search
-    setCurrentPage(1);
+    dispatch(updateGallery({ currentPage: 1 }));
     // Perform immediate search
     performSearch(query, 1);
   };
@@ -280,7 +173,7 @@ export default function Gallery() {
   // Handle page navigation
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;
-    setCurrentPage(newPage);
+    dispatch(updateGallery({ currentPage: newPage }));
     performSearch(debouncedQuery, newPage);
   };
 

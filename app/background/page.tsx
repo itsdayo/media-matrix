@@ -12,6 +12,8 @@ import {
   Video,
 } from "lucide-react";
 import { downloadFile } from "../utils/download";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { addTransfer, consumeTransfer, updateBackground } from "../store/store";
 
 function BackgroundPage() {
   const searchParams = useSearchParams();
@@ -22,34 +24,22 @@ function BackgroundPage() {
   const foregroundTitle = searchParams.get("foregroundTitle");
   const backgroundTitle = searchParams.get("backgroundTitle");
 
-  const [foregroundImage, setForegroundImage] = useState<string | null>(
-    foregroundUrl,
-  );
-  const [backgroundImage, setBackgroundImage] = useState<string | null>(
-    backgroundUrl,
-  );
+  const dispatch = useAppDispatch();
+  const { foregroundImage, backgroundImage, resultImage } = useAppSelector((state) => state.media.background);
+  const transfers = useAppSelector((state) => state.media.transfers);
   const [isDraggingForeground, setIsDraggingForeground] = useState(false);
   const [isDraggingBackground, setIsDraggingBackground] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [resultImage, setResultImage] = useState<string | null>(null);
 
   const foregroundFileInputRef = useRef<HTMLInputElement>(null);
   const backgroundFileInputRef = useRef<HTMLInputElement>(null);
 
   // Load persisted data on component mount
   useEffect(() => {
-    const persistedForegroundImage = sessionStorage.getItem(
-      "bg-foreground-image",
-    );
-    const persistedBackgroundImage = sessionStorage.getItem(
-      "bg-background-image",
-    );
-    const persistedResultImage = sessionStorage.getItem("bg-result-image");
-
     // Handle imageId from navigation with title-based distinction
     if (imageId && !foregroundUrl && !backgroundUrl) {
-      const image = sessionStorage.getItem(imageId);
+      const image = transfers[imageId];
       if (image) {
         // Use title parameter to determine if this is foreground or background
         if (foregroundTitle) {
@@ -60,60 +50,24 @@ function BackgroundPage() {
           // Default to foreground if no title specified
           persistForegroundImage(image);
         }
+        dispatch(consumeTransfer(imageId));
       }
     }
-
-    // Load persisted foreground image if not set by URL parameters
-    if (persistedForegroundImage && !foregroundUrl) {
-      setForegroundImage(persistedForegroundImage);
-    }
-
-    // Load persisted background image if not set by URL parameters
-    if (persistedBackgroundImage && !backgroundUrl) {
-      setBackgroundImage(persistedBackgroundImage);
-    }
-
-    // Always load result image
-    if (persistedResultImage) {
-      setResultImage(persistedResultImage);
-    }
-  }, [foregroundUrl, backgroundUrl, imageId, foregroundTitle, backgroundTitle]);
+    if (foregroundUrl) persistForegroundImage(foregroundUrl);
+    if (backgroundUrl) persistBackgroundImage(backgroundUrl);
+  }, [foregroundUrl, backgroundUrl, imageId, foregroundTitle, backgroundTitle, transfers, dispatch]);
 
   // Helper functions to persist state
   const persistForegroundImage = (imageUrl: string | null) => {
-    // Remove old data first
-    sessionStorage.removeItem("bg-foreground-image");
-
-    if (imageUrl) {
-      sessionStorage.setItem("bg-foreground-image", imageUrl);
-      setForegroundImage(imageUrl);
-    } else {
-      setForegroundImage(null);
-    }
+    dispatch(updateBackground({ foregroundImage: imageUrl }));
   };
 
   const persistBackgroundImage = (imageUrl: string | null) => {
-    // Remove old data first
-    sessionStorage.removeItem("bg-background-image");
-
-    if (imageUrl) {
-      sessionStorage.setItem("bg-background-image", imageUrl);
-      setBackgroundImage(imageUrl);
-    } else {
-      setBackgroundImage(null);
-    }
+    dispatch(updateBackground({ backgroundImage: imageUrl }));
   };
 
   const persistResultImage = (imageUrl: string | null) => {
-    // Remove old data first
-    sessionStorage.removeItem("bg-result-image");
-
-    if (imageUrl) {
-      sessionStorage.setItem("bg-result-image", imageUrl);
-      setResultImage(imageUrl);
-    } else {
-      setResultImage(null);
-    }
+    dispatch(updateBackground({ resultImage: imageUrl }));
   };
 
   const handleDragOver = (
@@ -240,7 +194,7 @@ function BackgroundPage() {
   const handleChatNavigation = (imageUrl: string) => {
     // Store the image with a unique ID and pass the ID in URL
     const imageId = `nav-chat-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    sessionStorage.setItem(imageId, imageUrl);
+    dispatch(addTransfer({ id: imageId, url: imageUrl }));
 
     const params = new URLSearchParams({
       imageId: imageId,
@@ -251,7 +205,7 @@ function BackgroundPage() {
   const handleImageToVideoNavigation = (imageUrl: string) => {
     // Store the image with a unique ID and pass the ID in URL
     const imageId = `nav-video-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    sessionStorage.setItem(imageId, imageUrl);
+    dispatch(addTransfer({ id: imageId, url: imageUrl }));
 
     const params = new URLSearchParams({
       imageId: imageId,
@@ -331,7 +285,7 @@ function BackgroundPage() {
                         onClick={(e) => {
                           e.stopPropagation();
                           persistForegroundImage(null);
-                          setForegroundImage(null);
+                          persistForegroundImage(null);
                         }}
                         className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
                       >
@@ -443,7 +397,7 @@ function BackgroundPage() {
                         onClick={(e) => {
                           e.stopPropagation();
                           persistBackgroundImage(null);
-                          setBackgroundImage(null);
+                          persistBackgroundImage(null);
                         }}
                         className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
                       >

@@ -5,13 +5,15 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Download, Video } from "lucide-react";
 import { downloadFile } from "../utils/download";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { consumeTransfer, updateVideo } from "../store/store";
 
 function ImageToVideoPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [inputText, setInputText] = useState("");
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [generatedVideo, setGeneratedVideo] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const { inputText, selectedImage, generatedVideo } = useAppSelector((state) => state.media.video);
+  const transfers = useAppSelector((state) => state.media.transfers);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,110 +21,34 @@ function ImageToVideoPage() {
 
   // Load persisted data on component mount
   useEffect(() => {
-    const persistedInputText = sessionStorage.getItem("video-input-text");
-    const persistedSelectedId = sessionStorage.getItem(
-      "video-current-selected-id",
-    );
-    const persistedGeneratedId = sessionStorage.getItem(
-      "video-current-generated-id",
-    );
-
-    if (persistedInputText) {
-      setInputText(persistedInputText);
-    }
-
     // Handle imageId from navigation
     const imageUrl = searchParams.get("imageUrl");
     const imageId = searchParams.get("imageId");
 
     if (imageId && !selectedImage) {
-      const image = sessionStorage.getItem(imageId);
+      const image = transfers[imageId];
       if (image) {
         persistSelectedImage(image);
+        dispatch(consumeTransfer(imageId));
       }
     } else if (imageUrl && !selectedImage) {
       // Fallback to direct URL (for backward compatibility)
       persistSelectedImage(imageUrl);
     }
 
-    if (persistedSelectedId && !imageId && !imageUrl) {
-      const selectedImage = getSelectedImageById(persistedSelectedId);
-      if (selectedImage) {
-        setSelectedImage(selectedImage);
-      }
-    }
-
-    if (persistedGeneratedId) {
-      const generatedVideo = getGeneratedVideoById(persistedGeneratedId);
-      if (generatedVideo) {
-        setGeneratedVideo(generatedVideo);
-      }
-    }
-  }, [searchParams]);
+  }, [searchParams, selectedImage, transfers, dispatch]);
 
   // Helper functions to persist state
   const persistInputText = (text: string) => {
-    // Remove old data first
-    sessionStorage.removeItem("video-input-text");
-
-    sessionStorage.setItem("video-input-text", text);
-    setInputText(text);
+    dispatch(updateVideo({ inputText: text }));
   };
 
   const persistSelectedImage = (imageUrl: string | null) => {
-    // Remove old data first
-    const currentId = sessionStorage.getItem("video-current-selected-id");
-    if (currentId) {
-      sessionStorage.removeItem(`video-selected-image-${currentId}`);
-      sessionStorage.removeItem("video-current-selected-id");
-    }
-
-    if (imageUrl) {
-      // Generate a unique ID for this image
-      const imageId = `selected-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-      sessionStorage.setItem(`video-selected-image-${imageId}`, imageUrl);
-      sessionStorage.setItem("video-current-selected-id", imageId);
-      setSelectedImage(imageUrl);
-    } else {
-      setSelectedImage(null);
-    }
+    dispatch(updateVideo({ selectedImage: imageUrl }));
   };
 
   const persistGeneratedVideo = (videoUrl: string | null) => {
-    // Remove old data first
-    const currentId = sessionStorage.getItem("video-current-generated-id");
-    if (currentId) {
-      sessionStorage.removeItem(`video-generated-video-${currentId}`);
-      sessionStorage.removeItem("video-current-generated-id");
-    }
-
-    if (videoUrl) {
-      // Generate a unique ID for this video
-      const videoId = `generated-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-      sessionStorage.setItem(`video-generated-video-${videoId}`, videoUrl);
-      sessionStorage.setItem("video-current-generated-id", videoId);
-      setGeneratedVideo(videoUrl);
-    } else {
-      setGeneratedVideo(null);
-    }
-  };
-
-  // Helper function to get image by ID
-  const getImageById = (imageId: string | null) => {
-    if (!imageId) return null;
-    return sessionStorage.getItem(imageId);
-  };
-
-  // Helper function to get selected image by ID (with proper key prefix)
-  const getSelectedImageById = (imageId: string | null) => {
-    if (!imageId) return null;
-    return sessionStorage.getItem(`video-selected-image-${imageId}`);
-  };
-
-  // Helper function to get generated video by ID (with proper key prefix)
-  const getGeneratedVideoById = (videoId: string | null) => {
-    if (!videoId) return null;
-    return sessionStorage.getItem(`video-generated-video-${videoId}`);
+    dispatch(updateVideo({ generatedVideo: videoUrl }));
   };
 
   const handleDragOver = (e: React.DragEvent) => {

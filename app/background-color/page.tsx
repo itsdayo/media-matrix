@@ -14,72 +14,29 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { downloadFile } from "../utils/download";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { addTransfer, consumeTransfer, updateBackgroundColor } from "../store/store";
 
 function BackgroundColorPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [backgroundColor, setBackgroundColor] = useState("#ffffff");
-  const [processedImage, setProcessedImage] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const { selectedImage, backgroundColor, processedImage } = useAppSelector((state) => state.media.backgroundColor);
+  const transfers = useAppSelector((state) => state.media.transfers);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [imageId, setImageId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load persisted data on component mount
-  useEffect(() => {
-    const persistedSelectedImage = sessionStorage.getItem(
-      "bg-color-selected-image",
-    );
-    const persistedBackgroundColor = sessionStorage.getItem(
-      "bg-color-background-color",
-    );
-    const persistedProcessedImage = sessionStorage.getItem(
-      "bg-color-processed-image",
-    );
-
-    if (persistedSelectedImage) {
-      setSelectedImage(persistedSelectedImage);
-    }
-    if (persistedBackgroundColor) {
-      setBackgroundColor(persistedBackgroundColor);
-    }
-    if (persistedProcessedImage) {
-      setProcessedImage(persistedProcessedImage);
-    }
-  }, []);
-
-  // Helper functions to persist state
   const persistSelectedImage = (imageUrl: string | null) => {
-    // Remove old data first
-    sessionStorage.removeItem("bg-color-selected-image");
-
-    if (imageUrl) {
-      sessionStorage.setItem("bg-color-selected-image", imageUrl);
-      setSelectedImage(imageUrl);
-    } else {
-      setSelectedImage(null);
-    }
+    dispatch(updateBackgroundColor({ selectedImage: imageUrl }));
   };
 
   const persistBackgroundColor = (color: string) => {
-    // Remove old data first
-    sessionStorage.removeItem("bg-color-background-color");
-
-    sessionStorage.setItem("bg-color-background-color", color);
-    setBackgroundColor(color);
+    dispatch(updateBackgroundColor({ backgroundColor: color }));
   };
 
   const persistProcessedImage = (imageUrl: string | null) => {
-    // Remove old data first
-    sessionStorage.removeItem("bg-color-processed-image");
-
-    if (imageUrl) {
-      sessionStorage.setItem("bg-color-processed-image", imageUrl);
-      setProcessedImage(imageUrl);
-    } else {
-      setProcessedImage(null);
-    }
+    dispatch(updateBackgroundColor({ processedImage: imageUrl }));
   };
 
   // Handle URL parameters from gallery navigation
@@ -88,16 +45,16 @@ function BackgroundColorPage() {
     const imageId = searchParams.get("imageId");
 
     if (imageId && !selectedImage) {
-      // Get image from sessionStorage using ID
-      const image = sessionStorage.getItem(imageId);
+      const image = transfers[imageId];
       if (image) {
         persistSelectedImage(image);
+        dispatch(consumeTransfer(imageId));
       }
     } else if (imageUrl && !selectedImage) {
       // Fallback to direct URL (for backward compatibility)
       persistSelectedImage(imageUrl);
     }
-  }, [searchParams]);
+  }, [searchParams, selectedImage, transfers, dispatch]);
 
   const handleImageUpload = (file: File) => {
     const reader = new FileReader();
@@ -174,7 +131,7 @@ function BackgroundColorPage() {
   const handleChatNavigation = (imageUrl: string) => {
     // Store the image with a unique ID and pass the ID in URL
     const imageId = `nav-chat-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    sessionStorage.setItem(imageId, imageUrl);
+    dispatch(addTransfer({ id: imageId, url: imageUrl }));
 
     const params = new URLSearchParams({
       imageId: imageId,
@@ -185,7 +142,7 @@ function BackgroundColorPage() {
   const handleImageToVideoNavigation = (imageUrl: string) => {
     // Store the image with a unique ID and pass the ID in URL
     const imageId = `nav-video-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    sessionStorage.setItem(imageId, imageUrl);
+    dispatch(addTransfer({ id: imageId, url: imageUrl }));
 
     const params = new URLSearchParams({
       imageId: imageId,
@@ -257,8 +214,8 @@ function BackgroundColorPage() {
                   />
                   <button
                     onClick={() => {
-                      setSelectedImage(null);
-                      setProcessedImage(null);
+                      persistSelectedImage(null);
+                      persistProcessedImage(null);
                     }}
                     className="absolute top-2 right-2 sm:right-36 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
                   >
